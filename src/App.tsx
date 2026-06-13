@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, BookOpen, Mail, TrendingUp, Gift } from 'lucide-react';
+import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown } from 'lucide-react';
 
 const SAVE_KEY = 'slothmail-save-v1';
 
@@ -79,6 +79,8 @@ const tones = [
   { id: "romantic", label: "Love", emoji: "💜", cost: 80 },
 ];
 
+const collectionCategories = tones.filter(tone => tone.id !== 'treats');
+
 type Message = (typeof messageBank)[number];
 type ActiveMessage = Pick<Message, 'title' | 'text' | 'tag'> & Partial<Pick<Message, 'id' | 'tone' | 'cost'>>;
 
@@ -124,6 +126,9 @@ export default function App() {
   const [activeMessage, setActiveMessage] = useState<ActiveMessage | null>(null);
   const [showSloth, setShowSloth] = useState(false);
   const [journal, setJournal] = useState<Message[]>(() => messageBank.filter(message => save.journalIds.includes(message.id)));
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(collectionCategories.map(category => [category.id, false]))
+  );
   const [view, setView] = useState('main');
   const [lastDailyClaim, setLastDailyClaim] = useState<string | null>(save.lastDailyClaim);
   const canClaimDaily = lastDailyClaim !== getTodayKey();
@@ -165,6 +170,10 @@ export default function App() {
       }
     }
     showSlothBriefly();
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setOpenCategories(current => ({ ...current, [categoryId]: !current[categoryId] }));
   };
 
   const navItems = [{ id: 'main', icon: Mail }, { id: 'journal', icon: BookOpen }, { id: 'upgrades', icon: TrendingUp }];
@@ -234,12 +243,51 @@ export default function App() {
         )}
 
         {view === 'journal' && (
-            <div className="w-full h-80 overflow-y-auto text-left space-y-2 text-xs">
-                {messageBank.map(m => (
-                    <div key={m.id} className={`p-2 rounded-lg border ${journal.find(j => j.id === m.id) ? 'bg-white' : 'bg-slate-100 opacity-50'}`}>
-                        <p className="font-bold">{journal.find(j => j.id === m.id) ? m.title : "Locked"}</p>
-                    </div>
-                ))}
+            <div className="w-full h-80 overflow-y-auto text-left space-y-2 text-xs pr-0.5">
+                {collectionCategories.map(category => {
+                  const categoryMessages = messageBank.filter(message => message.tone === category.id);
+                  const collectedMessages = categoryMessages.filter(message => journal.some(saved => saved.id === message.id));
+                  const isOpen = openCategories[category.id];
+
+                  return (
+                    <section key={category.id} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                      <button
+                        type="button"
+                        onClick={() => toggleCategory(category.id)}
+                        aria-expanded={isOpen}
+                        className="flex w-full items-center gap-2 px-3 py-2.5 text-left font-bold text-slate-700 hover:bg-rose-50"
+                      >
+                        <span className="text-base" aria-hidden="true">{category.emoji}</span>
+                        <span className="flex-1">{category.label.toLowerCase()} ({collectedMessages.length}/{categoryMessages.length})</span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                        />
+                      </button>
+
+                      {isOpen && (
+                        <div className="space-y-1.5 border-t border-slate-200 p-2">
+                          {categoryMessages.map(message => {
+                            const isCollected = journal.some(saved => saved.id === message.id);
+
+                            return isCollected ? (
+                              <div
+                                key={message.id}
+                                className="w-full rounded-lg border border-slate-200 bg-white p-2 text-left font-bold text-slate-700"
+                              >
+                                {message.title}
+                              </div>
+                            ) : (
+                              <div key={message.id} className="rounded-lg border border-slate-200 bg-slate-100 p-2 font-bold text-slate-400 opacity-70">
+                                Locked
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </section>
+                  );
+                })}
             </div>
         )}
       </div>
