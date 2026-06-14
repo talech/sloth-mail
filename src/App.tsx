@@ -81,6 +81,53 @@ const tones = [
 
 const collectionCategories = tones.filter(tone => tone.id !== 'treats');
 
+const lockedHints: Record<string, string[]> = {
+  soft: [
+    "Something cozy...", "For foggy little days...", "Permission to go gently...", "A note for tired creatures...",
+    "A tiny safe harbor...", "Official softness paperwork...", "Love at low battery...", "Important blanket law...",
+    "For tiny coffee days...", "A soft place to be held...",
+  ],
+  silly: [
+    "An urgent mouse alert...", "Something about snacks...", "Highly scientific findings...", "Tiny breaking news...",
+    "A mysterious comfort bonus...", "An important side quest...", "Advanced blanket magic...", "The sloth hotline says...",
+    "More at eleven...", "A prestigious resting title...",
+  ],
+  boost: [
+    "One brave little inch...", "A quiet spark...", "A note about mouse strength...", "The next tiny thing...",
+    "A brave kind of rest...", "For steady little paws...", "A very important main quest...", "Quiet persistence...",
+    "A bit of tiny momentum...", "One little candle...",
+  ],
+  romantic: [
+    "A light in the fog...", "A favorite little place...", "Something in your orbit...", "A soft place to land...",
+    "A favorite creature...", "Come a little closer...", "A bit of starlight...", "Always worth loving...",
+    "A tiny brave heartbeat...", "Something that feels like home...",
+  ],
+};
+
+const mouseEmotes = {
+  meh: { id: "meh", src: "./mice/meh.jpeg", label: "unimpressed mouse", effect: "·" },
+  sleeping: { id: "sleeping", src: "./mice/sleeping.jpeg", label: "sleeping mouse", effect: "z" },
+  peaceful: { id: "peaceful", src: "./mice/peaceful.jpeg", label: "peaceful mouse", effect: "✦" },
+  resting: { id: "resting", src: "./mice/resting.jpeg", label: "resting mouse", effect: "·" },
+  facepalmHappy: { id: "facepalm-happy", src: "./mice/facepalm-happy.jpeg", label: "amused mouse", effect: "✧" },
+  delighted: { id: "delighted", src: "./mice/delighted.jpeg", label: "delighted mouse", effect: "★" },
+  happy: { id: "happy", src: "./mice/happy.jpeg", label: "happy mouse", effect: "♡" },
+} as const;
+
+type MouseEmote = keyof typeof mouseEmotes;
+
+const getOpeningMouse = (): MouseEmote => new Date().getHours() >= 20 ? "sleeping" : "meh";
+
+const toneMouseEmotes: Record<string, MouseEmote> = {
+  treats: "peaceful",
+  soft: "resting",
+  silly: "facepalmHappy",
+  boost: "delighted",
+  romantic: "happy",
+};
+
+const mouseReplies = ["eep! 💜", "tiny boost! ✨", "feeling brighter ☀️", "thank you 🐭"];
+
 type Message = (typeof messageBank)[number];
 type ActiveMessage = Pick<Message, 'title' | 'text' | 'tag'> & Partial<Pick<Message, 'id' | 'tone' | 'cost'>>;
 
@@ -124,6 +171,10 @@ export default function App() {
   const [starRate, setStarRate] = useState(save.starRate);
   const [maxStars, setMaxStars] = useState(save.maxStars);
   const [activeMessage, setActiveMessage] = useState<ActiveMessage | null>(null);
+  const [activeMouse, setActiveMouse] = useState<MouseEmote>(getOpeningMouse);
+  const [messageRevealId, setMessageRevealId] = useState(0);
+  const [mouseReactionId, setMouseReactionId] = useState(0);
+  const [mouseReply, setMouseReply] = useState<string | null>(null);
   const [showSloth, setShowSloth] = useState(false);
   const [journal, setJournal] = useState<Message[]>(() => messageBank.filter(message => save.journalIds.includes(message.id)));
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(() =>
@@ -132,6 +183,7 @@ export default function App() {
   const [view, setView] = useState('main');
   const [lastDailyClaim, setLastDailyClaim] = useState<string | null>(save.lastDailyClaim);
   const canClaimDaily = lastDailyClaim !== getTodayKey();
+  const currentMouse = mouseEmotes[activeMouse];
 
   useEffect(() => {
     const timer = setInterval(() => setStars(prev => Math.min(prev + starRate, maxStars)), 1000);
@@ -155,25 +207,39 @@ export default function App() {
     window.setTimeout(() => setShowSloth(false), 3000);
   };
 
+  const revealMessage = (message: ActiveMessage) => {
+    setActiveMessage(message);
+    setMessageRevealId(current => current + 1);
+    showSlothBriefly();
+  };
+
   const handleDrawMessage = (toneId: string) => {
     if (toneId === 'treats') {
       const randomTreat = treatList[Math.floor(Math.random() * treatList.length)];
-      setActiveMessage({ title: "Tiny Treat", text: randomTreat, tag: "TREAT", cost: 10 });
+      revealMessage({ title: "Tiny Treat", text: randomTreat, tag: "TREAT", cost: 10 });
+      setActiveMouse(toneMouseEmotes.treats);
       setStars(prev => prev - 10);
     } else {
       const pool = messageBank.filter(m => m.tone === toneId);
       const randomMsg = pool[Math.floor(Math.random() * pool.length)];
       if (stars >= randomMsg.cost) {
         setStars(prev => prev - randomMsg.cost);
-        setActiveMessage(randomMsg);
+        revealMessage(randomMsg);
+        setActiveMouse(toneMouseEmotes[toneId]);
         if (!journal.find(m => m.id === randomMsg.id)) setJournal(prev => [...prev, randomMsg]);
       }
     }
-    showSlothBriefly();
   };
 
   const toggleCategory = (categoryId: string) => {
     setOpenCategories(current => ({ ...current, [categoryId]: !current[categoryId] }));
+  };
+
+  const encourageMouse = () => {
+    const reply = mouseReplies[mouseReactionId % mouseReplies.length];
+    setMouseReactionId(current => current + 1);
+    setMouseReply(reply);
+    window.setTimeout(() => setMouseReply(current => current === reply ? null : current), 1600);
   };
 
   const navItems = [{ id: 'main', icon: Mail }, { id: 'journal', icon: BookOpen }, { id: 'upgrades', icon: TrendingUp }];
@@ -197,29 +263,61 @@ export default function App() {
 
         {view === 'main' && (
         <>
-            <div className="h-32 relative flex flex-col items-center justify-center">
-              <div className="animate-[bounce_3s_infinite] text-6xl">🐭</div>
+            <button
+              key={`${currentMouse.id}-${mouseReactionId}`}
+              type="button"
+              aria-label="Give the mouse a little encouragement"
+              onClick={encourageMouse}
+              className={`mouse-stage mouse-stage-reacting mouse-stage-${currentMouse.id} h-36 relative flex w-full flex-col items-center justify-center`}
+            >
+              <div className="mouse-glow" aria-hidden="true" />
+              <div className="mouse-ambient" aria-hidden="true">
+                {Array.from({ length: 7 }, (_, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      '--particle-delay': `${index * -0.7}s`,
+                      '--particle-left': `${8 + index * 13}%`,
+                      '--particle-size': `${0.65 + index * 0.04}rem`,
+                      '--particle-top': `${8 + (index % 3) * 28}%`,
+                    } as React.CSSProperties}
+                  >
+                    {currentMouse.effect}
+                  </span>
+                ))}
+              </div>
+              {mouseReply && (
+                <span className="mouse-reply" role="status">{mouseReply}</span>
+              )}
+              <img
+                src={currentMouse.src}
+                alt={currentMouse.label}
+                className="mouse-emote h-32 w-32 object-contain"
+              />
               {showSloth && (
-                <div className="absolute -top-10 flex flex-col items-center animate-[slideInUp_0.5s_ease-out]">
+                <div className="absolute -top-8 right-6 flex flex-col items-center animate-[slideInUp_0.5s_ease-out]">
                   <div className="bg-white border border-rose-200 px-3 py-1 rounded-full shadow-md text-[10px] font-bold text-rose-500 mb-1">{activeMessage?.title}</div>
                   <div className="text-4xl">🦥</div>
                 </div>
               )}
-            </div>
+            </button>
 
-            <div className="w-full min-h-[100px] bg-slate-50 border border-slate-100 rounded-2xl p-3 flex flex-col justify-center items-center">
+            <div key={messageRevealId} className={`message-card w-full min-h-[100px] bg-slate-50 border border-slate-100 rounded-2xl p-3 flex flex-col justify-center items-center ${activeMessage ? 'message-card-opening' : ''}`}>
               {activeMessage ? (
-                <div className="animate-in fade-in duration-500">
-                  <p className="text-[10px] font-bold text-rose-400 uppercase">{activeMessage.tag}</p>
-                  <p className="text-xs italic leading-snug">{activeMessage.text}</p>
-                </div>
+                <>
+                  <div className="envelope-seal" aria-hidden="true">💌</div>
+                  <div className="message-copy">
+                    <p className="text-[10px] font-bold text-rose-400 uppercase">{activeMessage.tag}</p>
+                    <p className="text-xs italic leading-snug">{activeMessage.text}</p>
+                  </div>
+                </>
               ) : (
                 <p className="text-slate-400 text-xs">Select a mood for a sloth boost! 💌</p>
               )}
             </div>
 
             {canClaimDaily && (
-                <button onClick={() => {setLastDailyClaim(getTodayKey()); setActiveMessage({title:"Daily Gift", text:dailyBank[Math.floor(Math.random()*dailyBank.length)], tag:"DAILY"}); showSlothBriefly();}} className="w-full py-2 bg-purple-100 rounded-xl text-purple-700 font-bold text-xs flex items-center justify-center gap-2">
+                <button onClick={() => {setLastDailyClaim(getTodayKey()); setActiveMouse("happy"); revealMessage({title:"Daily Gift", text:dailyBank[Math.floor(Math.random()*dailyBank.length)], tag:"DAILY"});}} className="w-full py-2 bg-purple-100 rounded-xl text-purple-700 font-bold text-xs flex items-center justify-center gap-2">
                     <Gift size={14}/> Claim Daily Surprise
                 </button>
             )}
@@ -279,7 +377,7 @@ export default function App() {
                               </div>
                             ) : (
                               <div key={message.id} className="rounded-lg border border-slate-200 bg-slate-100 p-2 font-bold text-slate-400 opacity-70">
-                                Locked
+                                {lockedHints[category.id][categoryMessages.indexOf(message)]}
                               </div>
                             );
                           })}

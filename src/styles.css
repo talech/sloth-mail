@@ -7,3 +7,216 @@ button {
 button:disabled {
   cursor: not-allowed;
 }
+
+.mouse-emote {
+  position: relative;
+  z-index: 2;
+  border-radius: 42%;
+  mix-blend-mode: multiply;
+  transition: opacity 300ms ease, transform 300ms ease;
+  animation: mouse-breathe 3.5s ease-in-out infinite;
+}
+
+.mouse-stage {
+  isolation: isolate;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mouse-stage:hover .mouse-emote,
+.mouse-stage-reacting .mouse-emote {
+  animation: mouse-curious 700ms ease-in-out;
+}
+
+.mouse-stage:hover .mouse-ambient span,
+.mouse-stage-reacting .mouse-ambient span {
+  animation-duration: 2.8s;
+}
+
+.mouse-stage:focus-visible {
+  outline: 2px solid rgb(251 113 133 / 65%);
+  outline-offset: 2px;
+  border-radius: 1rem;
+}
+
+.mouse-reply {
+  position: absolute;
+  z-index: 4;
+  top: 0.15rem;
+  left: 1rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgb(254 205 211);
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 92%);
+  color: rgb(244 63 94);
+  font-size: 0.625rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgb(244 63 94 / 12%);
+  animation: mouse-reply-pop 1.6s ease-out both;
+}
+
+.mouse-glow {
+  position: absolute;
+  z-index: -2;
+  width: 7rem;
+  height: 3rem;
+  bottom: 0.25rem;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(251 191 36 / 18%), transparent 70%);
+  filter: blur(10px);
+  animation: glow-pulse 3.5s ease-in-out infinite;
+}
+
+.mouse-ambient {
+  position: absolute;
+  z-index: -1;
+  inset: 0.75rem 4.25rem 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.mouse-ambient span {
+  position: absolute;
+  left: var(--particle-left);
+  bottom: 0.75rem;
+  color: rgb(244 114 182 / 38%);
+  font-size: 0.7rem;
+  font-weight: 800;
+  opacity: 0;
+  text-shadow: 0 0 6px currentColor;
+  animation: ambient-float 7s var(--particle-delay) ease-in-out infinite;
+}
+
+.mouse-stage-sleeping .mouse-glow,
+.mouse-stage-resting .mouse-glow,
+.mouse-stage-meh .mouse-glow {
+  background: radial-gradient(ellipse, rgb(147 197 253 / 20%), transparent 70%);
+}
+
+.mouse-stage-sleeping .mouse-ambient span {
+  color: rgb(148 163 184 / 42%);
+  font-size: var(--particle-size);
+  animation-name: sleepy-drift;
+}
+
+.mouse-stage-resting .mouse-ambient span,
+.mouse-stage-peaceful .mouse-ambient span,
+.mouse-stage-meh .mouse-ambient span {
+  color: rgb(167 139 250 / 40%);
+  animation-duration: 8s;
+}
+
+.mouse-stage-facepalm-happy .mouse-ambient span {
+  color: rgb(244 114 182 / 45%);
+  animation-duration: 6.5s;
+}
+
+.mouse-stage-happy .mouse-ambient span {
+  color: rgb(251 113 133 / 45%);
+  animation-duration: 6.5s;
+}
+
+.mouse-stage-delighted .mouse-ambient span {
+  color: rgb(251 191 36 / 50%);
+  animation-duration: 6s;
+}
+
+.message-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.message-card-opening {
+  animation: envelope-lift 550ms ease-out;
+}
+
+.message-copy {
+  animation: letter-reveal 750ms ease-out both;
+}
+
+.envelope-seal {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  font-size: 2rem;
+  transform: translate(-50%, -50%);
+  animation: envelope-open 700ms ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes mouse-breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.015); }
+}
+
+@keyframes mouse-curious {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  35% { transform: translateY(-5px) rotate(-2deg) scale(1.04); }
+  70% { transform: translateY(-3px) rotate(2deg) scale(1.03); }
+}
+
+@keyframes mouse-reply-pop {
+  0% { opacity: 0; transform: translateY(4px) scale(0.9); }
+  15%, 80% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-3px) scale(0.98); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.94); }
+  50% { opacity: 0.65; transform: scale(1.03); }
+}
+
+@keyframes ambient-float {
+  0% { opacity: 0; transform: translateY(0) scale(0.6) rotate(0); }
+  20% { opacity: 0.4; }
+  75% { opacity: 0.22; }
+  100% { opacity: 0; transform: translateY(-5rem) scale(1.05) rotate(25deg); }
+}
+
+@keyframes sleepy-drift {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.65); }
+  20% { opacity: 0.38; }
+  100% { opacity: 0; transform: translate(1rem, -4.5rem) scale(1.12); }
+}
+
+@keyframes envelope-lift {
+  0% { transform: translateY(3px) scale(0.98); }
+  55% { transform: translateY(-2px) scale(1.01); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes envelope-open {
+  0%, 35% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -90%) scale(1.2) rotate(-5deg); }
+}
+
+@keyframes letter-reveal {
+  0%, 35% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mouse-emote,
+  .mouse-reply,
+  .message-card-opening,
+  .message-copy {
+    animation: none;
+  }
+
+  .envelope-seal {
+    display: none;
+  }
+
+  .mouse-glow {
+    opacity: 0.4;
+    animation: none;
+  }
+
+  .mouse-ambient span {
+    top: var(--particle-top);
+    bottom: auto;
+    opacity: 0.28;
+    animation: none;
+  }
+}
