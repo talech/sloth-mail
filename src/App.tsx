@@ -8,17 +8,17 @@ type LimitedNews = { image: string; alt: string; message: string; isPreview?: bo
 
 const limitedNewsByDate: Record<string, LimitedNews> = {
   '2026-06-18': {
-    image: '/limited/sloth-love.jpeg',
+    image: './limited/sloth-love.jpeg',
     alt: 'sweet sloth love illustration',
     message: 'un besito sorpresa',
   },
   '2026-06-19': {
-    image: '/limited/sloth-morning.jpeg',
+    image: './limited/sloth-morning.jpeg',
     alt: 'morning sloth illustration',
     message: 'hola ojitos',
   },
   '2026-06-20': {
-    image: '/limited/mouse-travel.jpeg',
+    image: './limited/mouse-travel.jpeg',
     alt: 'traveling mouse illustration',
     message: 'see you soon 💜',
   },
