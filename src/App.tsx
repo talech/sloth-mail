@@ -1,7 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown } from 'lucide-react';
+import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown, X } from 'lucide-react';
 
 const SAVE_KEY = 'slothmail-save-v1';
+const LIMITED_NEWS_KEY = 'slothmail-limited-news-flash-seen-v1';
+
+type LimitedNews = { image: string; alt: string; message: string; isPreview?: boolean };
+
+const limitedNewsByDate: Record<string, LimitedNews> = {
+  '2026-06-18': {
+    image: '/limited/sloth-love.jpeg',
+    alt: 'sweet sloth love illustration',
+    message: 'un besito sorpresa',
+  },
+  '2026-06-19': {
+    image: '/limited/sloth-morning.jpeg',
+    alt: 'morning sloth illustration',
+    message: 'hola ojitos',
+  },
+  '2026-06-20': {
+    image: '/limited/mouse-travel.jpeg',
+    alt: 'traveling mouse illustration',
+    message: 'see you soon 💜',
+  },
+};
 
 const treatList = [
   "breathe 🌿", "wiggle 🐭", "hydrate 💧", "nest 🛌", "snack 🍪", "unfurl 🌱", "exhale 🌙", "pause ☁️", "gentle 💜", "coffee ☕️",
@@ -149,6 +170,15 @@ const freshSave: SaveData = {
 
 const getTodayKey = () => new Date().toLocaleDateString('en-CA');
 
+const getLimitedNews = () => {
+  const previewDate = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('limitedNews') : null;
+  const previewNews = previewDate ? limitedNewsByDate[previewDate] : null;
+  if (previewNews) return { ...previewNews, isPreview: true };
+
+  const todayNews = limitedNewsByDate[getTodayKey()];
+  return todayNews && localStorage.getItem(LIMITED_NEWS_KEY) !== 'true' ? todayNews : null;
+};
+
 const loadSave = (): SaveData => {
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? '') as Partial<SaveData>;
@@ -182,6 +212,7 @@ export default function App() {
   );
   const [view, setView] = useState('main');
   const [lastDailyClaim, setLastDailyClaim] = useState<string | null>(save.lastDailyClaim);
+  const [limitedNews, setLimitedNews] = useState(getLimitedNews);
   const canClaimDaily = lastDailyClaim !== getTodayKey();
   const currentMouse = mouseEmotes[activeMouse];
 
@@ -189,6 +220,12 @@ export default function App() {
     const timer = setInterval(() => setStars(prev => Math.min(prev + starRate, maxStars)), 1000);
     return () => clearInterval(timer);
   }, [starRate, maxStars]);
+
+  useEffect(() => {
+    if (limitedNews && !limitedNews.isPreview) {
+      localStorage.setItem(LIMITED_NEWS_KEY, 'true');
+    }
+  }, [limitedNews]);
 
   useEffect(() => {
     const nextSave: SaveData = {
@@ -242,10 +279,43 @@ export default function App() {
     window.setTimeout(() => setMouseReply(current => current === reply ? null : current), 1600);
   };
 
+  const dismissLimitedNews = () => setLimitedNews(null);
+
   const navItems = [{ id: 'main', icon: Mail }, { id: 'journal', icon: BookOpen }, { id: 'upgrades', icon: TrendingUp }];
 
   return (
     <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center p-2 font-sans text-slate-800">
+      {limitedNews && (
+        <div className="limited-news-backdrop" role="presentation">
+          <section
+            className="limited-news-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="limited-news-title"
+          >
+            <button
+              type="button"
+              className="limited-news-close"
+              onClick={dismissLimitedNews}
+              aria-label="Close news flash"
+            >
+              <X size={16} />
+            </button>
+            <div className="limited-news-art">
+              <img
+                className="limited-news-image"
+                src={limitedNews.image}
+                alt={limitedNews.alt}
+              />
+            </div>
+            <div className="limited-news-copy">
+              <p id="limited-news-title" className="limited-news-title">📢 News Flash</p>
+              <p className="limited-news-message">{limitedNews.message}</p>
+            </div>
+          </section>
+        </div>
+      )}
+
       <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm p-4 flex flex-col items-center text-center space-y-3">
         <div className="flex justify-between w-full items-center">
             <div className="flex items-center gap-2 bg-amber-100 px-4 py-1 rounded-full font-bold text-amber-700 text-sm">
