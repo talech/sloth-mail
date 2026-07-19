@@ -3,6 +3,8 @@ import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown, X } from 'lucide-r
 
 const SAVE_KEY = 'slothmail-save-v1';
 const LIMITED_NEWS_KEY = 'slothmail-limited-news-flash-seen-v1';
+const UPDATE_BANNER_SEEN_KEY = 'slothmail-jul-19-message-update-seen-v1';
+const UPDATE_BANNER_EXPIRES_AT = '2026-07-20T18:54:00-04:00';
 const WELCOME_BACK_AFTER_MS = 8 * 60 * 60 * 1000;
 
 type LimitedNews = { image: string; alt: string; message: string; isPreview?: boolean };
@@ -244,6 +246,11 @@ const isWelcomeBackPreview = () => (
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('welcomeBack') === '1'
 );
 
+const shouldShowUpdateBanner = () => (
+  Date.now() < new Date(UPDATE_BANNER_EXPIRES_AT).getTime()
+  && localStorage.getItem(UPDATE_BANNER_SEEN_KEY) !== 'true'
+);
+
 const loadSave = (): SaveData => {
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? '') as Partial<SaveData>;
@@ -281,6 +288,7 @@ export default function App() {
   const [lastDailyClaim, setLastDailyClaim] = useState<string | null>(save.lastDailyClaim);
   const [limitedNews, setLimitedNews] = useState(getLimitedNews);
   const [showWelcomeBack, setShowWelcomeBack] = useState(() => isWelcomeBackPreview() || shouldShowWelcomeBack(save.lastOpenedAt));
+  const [showUpdateBanner, setShowUpdateBanner] = useState(shouldShowUpdateBanner);
   const canClaimDaily = lastDailyClaim !== getTodayKey();
   const currentMouse = mouseEmotes[activeMouse];
 
@@ -350,6 +358,10 @@ export default function App() {
 
   const dismissLimitedNews = () => setLimitedNews(null);
   const dismissWelcomeBack = () => setShowWelcomeBack(false);
+  const dismissUpdateBanner = () => {
+    localStorage.setItem(UPDATE_BANNER_SEEN_KEY, 'true');
+    setShowUpdateBanner(false);
+  };
 
   const navItems = [{ id: 'main', icon: Mail }, { id: 'journal', icon: BookOpen }, { id: 'upgrades', icon: TrendingUp }];
 
@@ -415,6 +427,20 @@ export default function App() {
               <p className="limited-news-message">{limitedNews.message}</p>
             </div>
           </section>
+        </div>
+      )}
+
+      {showUpdateBanner && (
+        <div className="update-banner" role="status">
+          <span>Update: the sloth added messages on Jul 19! 💌</span>
+          <button
+            type="button"
+            className="update-banner-close"
+            onClick={dismissUpdateBanner}
+            aria-label="Dismiss update message"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 
