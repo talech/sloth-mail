@@ -3,6 +3,7 @@ import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown, X } from 'lucide-r
 
 const SAVE_KEY = 'slothmail-save-v1';
 const LIMITED_NEWS_KEY = 'slothmail-limited-news-flash-seen-v1';
+const WELCOME_BACK_AFTER_MS = 8 * 60 * 60 * 1000;
 
 type LimitedNews = { image: string; alt: string; message: string; isPreview?: boolean };
 
@@ -60,6 +61,16 @@ const messageBank = [
   { id: 8, tone: "soft", title: "blanket rights", text: "You have full legal rights to burrito yourself in blankets and ignore unnecessary nonsense today. 🌯🐭", tag: "soft", cost: 30 },
   { id: 9, tone: "soft", title: "nespressy era", text: "Perhaps today is not a “conquer the world” day. Perhaps today is a “tiny coffee and survive” day. ☕️✨", tag: "soft", cost: 30 },
   { id: 10, tone: "soft", title: "held gently", text: "You do not have to carry today perfectly. Let the slothday hold you a little too. 💜🌙", tag: "soft", cost: 30 },
+  { id: 41, tone: "soft", title: "little wave", text: "No rush, Cuchito. The day isn't going anywhere. Take your tiny mouse time. 🌊🐭", tag: "soft", cost: 30 },
+  { id: 42, tone: "soft", title: "borrow my strength", text: "If your heart is tired today, you can borrow mine for a little while. I have more. 💜🦥", tag: "soft", cost: 30 },
+  { id: 43, tone: "soft", title: "soft pause", text: "Today's assignment: treat yourself like you'd treat a tiny rescued woodland creature. 🐭🌿", tag: "soft", cost: 30 },
+  { id: 44, tone: "soft", title: "blanket kingdom", text: "The Kingdom of Blankets has officially declared today a national holiday. Attendance is mandatory. 👑🛏️", tag: "soft", cost: 30 },
+  { id: 45, tone: "soft", title: "today is enough", text: "You don't have to become the old you today. Just become today's you. That's enough. 🌱", tag: "soft", cost: 30 },
+  { id: 46, tone: "soft", title: "gentle heartbeat", text: "Nothing is wrong with a heart that needs to beat a little slower today. 💗", tag: "soft", cost: 30 },
+  { id: 47, tone: "soft", title: "mouse pause", text: "Tiny pause. Tiny breath. Tiny sip of water. That's already a lovely beginning. 💧🐭", tag: "soft", cost: 30 },
+  { id: 48, tone: "soft", title: "resting forest", text: "Even forests have quiet seasons. They are still alive the whole time. 🌲💚", tag: "soft", cost: 30 },
+  { id: 49, tone: "soft", title: "little anchor", text: "Just checking in to remind you that you're deeply loved. No reason. Just because. ⚓💜", tag: "soft", cost: 30 },
+  { id: 50, tone: "soft", title: "cozy approval", text: "You have received five stars in today's \"being gentle with yourself\" challenge. ⭐⭐⭐⭐⭐", tag: "soft", cost: 30 },
   { id: 11, tone: "silly", title: "emergency mouse", text: "Alert: mouse detected attempting to function while dramatically undercharged. Deploy cuddles immediately. 🚨🐭", tag: "silly", cost: 40 },
   { id: 12, tone: "silly", title: "snack prophecy", text: "Ancient sloth prophecy says the tiny mouse shall soon encounter a highly restorative snack. 🔮🍪", tag: "silly", cost: 40 },
   { id: 13, tone: "silly", title: "scientific findings", text: "Scientists confirm your cuteness remains critically high despite exhaustion levels. More studies required. 🧪🐭", tag: "silly", cost: 40 },
@@ -70,6 +81,16 @@ const messageBank = [
   { id: 18, tone: "silly", title: "sloth hotline", text: "Hello, you have reached the sloth support hotline. Press 1 for kisses. Press 2 for hugs. ☎️🦥", tag: "silly", cost: 40 },
   { id: 19, tone: "silly", title: "important update", text: "The mouse remains brave, adorable, and mildly overcooked. More at eleven. 📺🐭", tag: "silly", cost: 40 },
   { id: 20, tone: "silly", title: "elite athlete", text: "Competitive resting is still technically a sport and you are currently ranked internationally. 🏆💤", tag: "silly", cost: 40 },
+  { id: 51, tone: "silly", title: "important meeting", text: "Reminder: today's meeting with the Blanket Committee begins immediately. Attendance by mouse is required. 📋🛏️", tag: "silly", cost: 40 },
+  { id: 52, tone: "silly", title: "loading...", text: "Mouse.com is still loading. Estimated completion time: eventually. 💻🐭", tag: "silly", cost: 40 },
+  { id: 53, tone: "silly", title: "forest gossip", text: "Breaking gossip: every squirrel agrees you're adorable. 🐿️☕", tag: "silly", cost: 40 },
+  { id: 54, tone: "silly", title: "battery update", text: "Battery: 4%. Cuteness: 178%. 🔋✨", tag: "silly", cost: 40 },
+  { id: 55, tone: "silly", title: "sloth inspection", text: "Routine sloth inspection complete. Verdict: mouse deserves little kisses. 🦥✅", tag: "silly", cost: 40 },
+  { id: 56, tone: "silly", title: "my leaf", text: "Today's emotional support leaf has been assigned to your account. Please cherish it. 🍃", tag: "silly", cost: 40 },
+  { id: 57, tone: "silly", title: "tiny criminal", text: "You have been charged with being illegally adorable. Court date pending. ⚖️🐭", tag: "silly", cost: 40 },
+  { id: 58, tone: "silly", title: "professional napper", text: "Congratulations! You've been promoted to Senior Resting Specialist. 💤📈", tag: "silly", cost: 40 },
+  { id: 59, tone: "silly", title: "forest patch notes", text: "Version 2.3 released: +1 cozy, +2 snacks. Sloth hugs buff increased by 300%. 🎮", tag: "silly", cost: 40 },
+  { id: 60, tone: "silly", title: "mouse prestige", text: "You've unlocked Legendary Tiny Mouse status. Reward: infinite apapachos. 🏆💜", tag: "silly", cost: 40 },
   { id: 21, tone: "boost", title: "one inch", text: "You do not need a giant leap today. One inch forward still counts as movement. 📏✨", tag: "boost", cost: 60 },
   { id: 22, tone: "boost", title: "tiny spark", text: "The spark is still there, even if today it only glows very quietly. 🔥💜", tag: "boost", cost: 60 },
   { id: 23, tone: "boost", title: "mouse strength", text: "Your strength has never only existed on the easy days. 🐭⭐", tag: "boost", cost: 60 },
@@ -106,12 +127,17 @@ const lockedHints: Record<string, string[]> = {
   soft: [
     "Something cozy...", "For foggy little days...", "Permission to go gently...", "A note for tired creatures...",
     "A tiny safe harbor...", "Official softness paperwork...", "Love at low battery...", "Important blanket law...",
-    "For tiny coffee days...", "A soft place to be held...",
+    "For tiny coffee days...", "A soft place to be held...", "A small ripple of reassurance...", "A little strength to borrow...",
+    "Time for a gentle pause...", "A royal blanket decree...", "Enough for this one day...", "A slower rhythm...",
+    "One tiny beginning...", "A quiet season...", "Something steady nearby...", "Five cozy stars...",
   ],
   silly: [
     "An urgent mouse alert...", "Something about snacks...", "Highly scientific findings...", "Tiny breaking news...",
     "A mysterious comfort bonus...", "An important side quest...", "Advanced blanket magic...", "The sloth hotline says...",
-    "More at eleven...", "A prestigious resting title...",
+    "More at eleven...", "A prestigious resting title...", "The Blanket Committee is gathering...", "Still loading...",
+    "Whispers from the squirrels...", "A highly important battery report...", "An official sloth verdict...",
+    "Your assigned support item...", "A tiny pending court case...", "A major career advancement...",
+    "The latest forest update...", "A legendary new status...",
   ],
   boost: [
     "One brave little inch...", "A quiet spark...", "A note about mouse strength...", "The next tiny thing...",
@@ -158,6 +184,7 @@ type SaveData = {
   maxStars: number;
   journalIds: number[];
   lastDailyClaim: string | null;
+  lastOpenedAt: string | null;
 };
 
 const freshSave: SaveData = {
@@ -166,6 +193,7 @@ const freshSave: SaveData = {
   maxStars: 500,
   journalIds: [],
   lastDailyClaim: null,
+  lastOpenedAt: null,
 };
 
 const getTodayKey = () => new Date().toLocaleDateString('en-CA');
@@ -179,6 +207,17 @@ const getLimitedNews = () => {
   return todayNews && localStorage.getItem(LIMITED_NEWS_KEY) !== 'true' ? todayNews : null;
 };
 
+const shouldShowWelcomeBack = (lastOpenedAt: string | null) => {
+  if (!lastOpenedAt) return false;
+
+  const lastOpenedTime = new Date(lastOpenedAt).getTime();
+  return Number.isFinite(lastOpenedTime) && Date.now() - lastOpenedTime > WELCOME_BACK_AFTER_MS;
+};
+
+const isWelcomeBackPreview = () => (
+  import.meta.env.DEV && new URLSearchParams(window.location.search).get('welcomeBack') === '1'
+);
+
 const loadSave = (): SaveData => {
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? '') as Partial<SaveData>;
@@ -189,6 +228,7 @@ const loadSave = (): SaveData => {
       maxStars: typeof saved.maxStars === 'number' ? saved.maxStars : freshSave.maxStars,
       journalIds: Array.isArray(saved.journalIds) ? saved.journalIds.filter(id => typeof id === 'number') : [],
       lastDailyClaim: typeof saved.lastDailyClaim === 'string' ? saved.lastDailyClaim : null,
+      lastOpenedAt: typeof saved.lastOpenedAt === 'string' ? saved.lastOpenedAt : null,
     };
   } catch {
     return freshSave;
@@ -197,6 +237,7 @@ const loadSave = (): SaveData => {
 
 export default function App() {
   const [save] = useState(loadSave);
+  const [openedAt] = useState(() => new Date().toISOString());
   const [stars, setStars] = useState(save.stars);
   const [starRate, setStarRate] = useState(save.starRate);
   const [maxStars, setMaxStars] = useState(save.maxStars);
@@ -213,6 +254,7 @@ export default function App() {
   const [view, setView] = useState('main');
   const [lastDailyClaim, setLastDailyClaim] = useState<string | null>(save.lastDailyClaim);
   const [limitedNews, setLimitedNews] = useState(getLimitedNews);
+  const [showWelcomeBack, setShowWelcomeBack] = useState(() => isWelcomeBackPreview() || shouldShowWelcomeBack(save.lastOpenedAt));
   const canClaimDaily = lastDailyClaim !== getTodayKey();
   const currentMouse = mouseEmotes[activeMouse];
 
@@ -234,10 +276,11 @@ export default function App() {
       maxStars,
       journalIds: journal.map(message => message.id),
       lastDailyClaim,
+      lastOpenedAt: openedAt,
     };
 
     localStorage.setItem(SAVE_KEY, JSON.stringify(nextSave));
-  }, [stars, starRate, maxStars, journal, lastDailyClaim]);
+  }, [stars, starRate, maxStars, journal, lastDailyClaim, openedAt]);
 
   const showSlothBriefly = () => {
     setShowSloth(true);
@@ -280,11 +323,44 @@ export default function App() {
   };
 
   const dismissLimitedNews = () => setLimitedNews(null);
+  const dismissWelcomeBack = () => setShowWelcomeBack(false);
 
   const navItems = [{ id: 'main', icon: Mail }, { id: 'journal', icon: BookOpen }, { id: 'upgrades', icon: TrendingUp }];
 
   return (
     <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center p-2 font-sans text-slate-800">
+      {showWelcomeBack && (
+        <div className="welcome-back-backdrop" role="presentation">
+          <section
+            className="welcome-back-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="welcome-back-title"
+          >
+            <div className="welcome-back-sparkles" aria-hidden="true">
+              <span>✦</span>
+              <span>♡</span>
+              <span>✧</span>
+            </div>
+            <div className="welcome-back-art">
+              <img src="./sloth/sloth-message.png" alt="Sloth holding a sweet message" />
+            </div>
+            <div className="welcome-back-copy">
+              <p className="welcome-back-kicker">SlothMail missed you</p>
+              <h1 id="welcome-back-title">Welcome Back</h1>
+              <p>The tiny inbox stayed warm while you were away.</p>
+            </div>
+            <button
+              type="button"
+              className="welcome-back-button"
+              onClick={dismissWelcomeBack}
+            >
+              boop me
+            </button>
+          </section>
+        </div>
+      )}
+
       {limitedNews && (
         <div className="limited-news-backdrop" role="presentation">
           <section
