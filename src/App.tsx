@@ -1,11 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown, X } from 'lucide-react';
+import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown, Mountain, X } from 'lucide-react';
 
 const SAVE_KEY = 'slothmail-save-v1';
 const LIMITED_NEWS_KEY = 'slothmail-limited-news-flash-seen-v1';
 const UPDATE_BANNER_SEEN_KEY = 'slothmail-jul-19-message-update-seen-v1';
 const UPDATE_BANNER_EXPIRES_AT = '2026-07-20T18:54:00-04:00';
 const WELCOME_BACK_AFTER_MS = 8 * 60 * 60 * 1000;
+const BANFF_SEEN_KEY_PREFIX = 'slothmail-banff-postcard-seen-';
+
+const banffMessages: Record<number, string> = {
+  16: 'Two little adventurers are dreaming of lakes the color of magic. 🩵💜✨',
+  15: 'Almost time to disappear into the mountains and become two cozy little adventurers. 🌲✨',
+  14: 'Tiny paws are practicing their best mountain-adventure wiggles. 🐭✨',
+  13: 'Mouse has requested slow trails, soft mornings, and emergency vacation kisses. 🦥💋',
+  12: 'The mountains are getting closer, one tiny sleepy day at a time. 🏔️💤',
+  11: 'Somewhere in Banff, a cozy little view is waiting just for us. 🌲💜',
+  10: 'Ten more sleeps until sloth and mouse begin their grand Canadian scurry. 🇨🇦🐾',
+  9: 'Sloth and mouse are packing something cozy for the mountains. 🏔️💜',
+  8: 'The suitcase remains empty, but our little hearts are already packed. 🧳💞',
+  7: 'One week until we trade ordinary mornings for mountains and cuddles. ☀️🏔️',
+  6: 'Mouse packed three sweaters. Sloth packed one emotional-support leaf. 🍃🐭',
+  5: 'Five tiny sleeps until our woodland creatures wander somewhere wonderful. 🌲🐭',
+  4: 'The mountains have officially entered booping distance. 👉🏔️',
+  3: 'Three more sleeps. The mouse is excited. The sloth is emotionally overpacked. 💜🧳',
+  2: 'The tiny travel committee has begun making a very serious snack list. 🧀🐭',
+  1: 'One more sleep until our tiny Banff adventure becomes real. Sleep is now optional. 🥹🏔️',
+};
+
+type BanffPostcard = {
+  dateKey: string;
+  daysRemaining: number;
+  image: string;
+  message: string;
+  title: string;
+};
 
 type LimitedNews = { image: string; alt: string; message: string; isPreview?: boolean };
 
@@ -226,6 +254,42 @@ const freshSave: SaveData = {
 
 const getTodayKey = () => new Date().toLocaleDateString('en-CA');
 
+const getBanffPostcard = (): BanffPostcard | null => {
+  const previewDate = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('banffDate') : null;
+  const dateKey = previewDate ?? getTodayKey();
+  const match = /^2026-08-(\d{2})$/.exec(dateKey);
+
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  if (day < 15 || day > 31) return null;
+
+  const daysRemaining = 31 - day;
+
+  if (daysRemaining === 0) {
+    return {
+      dateKey,
+      daysRemaining,
+      image: './banff/banff-day.png',
+      message: 'Tiny bags packed. Little hearts full. Mountain adventure activated. 🦥🐭🏔️',
+      title: 'Banff day is here!',
+    };
+  }
+
+  return {
+    dateKey,
+    daysRemaining,
+    image: `./banff/banff-${daysRemaining}.png`,
+    message: banffMessages[daysRemaining],
+    title: `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} to Banff`,
+  };
+};
+
+const getWelcomePostcardImage = (postcard: BanffPostcard) => {
+  const day = Number(postcard.dateKey.slice(-2));
+  return `./banff/welcome-postcard-${day % 2 === 1 ? 1 : 2}.png`;
+};
+
 const getLimitedNews = () => {
   const previewDate = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('limitedNews') : null;
   const previewNews = previewDate ? limitedNewsByDate[previewDate] : null;
@@ -289,6 +353,14 @@ export default function App() {
   const [limitedNews, setLimitedNews] = useState(getLimitedNews);
   const [showWelcomeBack, setShowWelcomeBack] = useState(() => isWelcomeBackPreview() || shouldShowWelcomeBack(save.lastOpenedAt));
   const [showUpdateBanner, setShowUpdateBanner] = useState(shouldShowUpdateBanner);
+  const [banffPostcard] = useState(getBanffPostcard);
+  const [showBanffPostcard, setShowBanffPostcard] = useState(false);
+  const [banffImageMissing, setBanffImageMissing] = useState(false);
+  const [welcomePostcardMissing, setWelcomePostcardMissing] = useState(false);
+  const [hasSeenBanffPostcard, setHasSeenBanffPostcard] = useState(() => {
+    const postcard = getBanffPostcard();
+    return postcard ? localStorage.getItem(`${BANFF_SEEN_KEY_PREFIX}${postcard.dateKey}`) === 'true' : true;
+  });
   const canClaimDaily = lastDailyClaim !== getTodayKey();
   const currentMouse = mouseEmotes[activeMouse];
 
@@ -358,6 +430,12 @@ export default function App() {
 
   const dismissLimitedNews = () => setLimitedNews(null);
   const dismissWelcomeBack = () => setShowWelcomeBack(false);
+  const openBanffPostcard = () => {
+    if (!banffPostcard) return;
+    localStorage.setItem(`${BANFF_SEEN_KEY_PREFIX}${banffPostcard.dateKey}`, 'true');
+    setHasSeenBanffPostcard(true);
+    setShowBanffPostcard(true);
+  };
   const dismissUpdateBanner = () => {
     localStorage.setItem(UPDATE_BANNER_SEEN_KEY, 'true');
     setShowUpdateBanner(false);
@@ -370,7 +448,7 @@ export default function App() {
       {showWelcomeBack && (
         <div className="welcome-back-backdrop" role="presentation">
           <section
-            className="welcome-back-modal"
+            className={`welcome-back-modal ${banffPostcard ? 'welcome-back-modal-banff' : ''}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="welcome-back-title"
@@ -381,12 +459,16 @@ export default function App() {
               <span>✧</span>
             </div>
             <div className="welcome-back-art">
-              <img src="./sloth/sloth-message.png" alt="Sloth holding a sweet message" />
+              <img
+                src={banffPostcard && !welcomePostcardMissing ? getWelcomePostcardImage(banffPostcard) : './sloth/sloth-message.png'}
+                alt={banffPostcard && !welcomePostcardMissing ? 'A postcard for our upcoming Banff adventure' : 'Sloth holding a sweet message'}
+                onError={() => setWelcomePostcardMissing(true)}
+              />
             </div>
             <div className="welcome-back-copy">
-              <p className="welcome-back-kicker">SlothMail missed you</p>
-              <h1 id="welcome-back-title">Welcome Back</h1>
-              <p>The tiny inbox stayed warm while you were away.</p>
+              <p className="welcome-back-kicker">{banffPostcard ? 'A tiny vacation postcard' : 'SlothMail missed you'}</p>
+              <h1 id="welcome-back-title">{banffPostcard ? banffPostcard.title : 'Welcome Back'}</h1>
+              <p>{banffPostcard ? banffPostcard.message : 'The tiny inbox stayed warm while you were away.'}</p>
             </div>
             <button
               type="button"
@@ -430,6 +512,49 @@ export default function App() {
         </div>
       )}
 
+      {showBanffPostcard && banffPostcard && (
+        <div className="banff-backdrop" role="presentation">
+          <section
+            className="banff-postcard"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="banff-postcard-title"
+          >
+            <button
+              type="button"
+              className="banff-close"
+              onClick={() => setShowBanffPostcard(false)}
+              aria-label="Close Banff postcard"
+            >
+              <X size={16} />
+            </button>
+            <div className="banff-art">
+              {!banffImageMissing ? (
+                <img
+                  src={banffPostcard.image}
+                  alt="Sloth and mouse preparing for their Banff adventure"
+                  onError={() => setBanffImageMissing(true)}
+                />
+              ) : (
+                <div className="banff-art-placeholder" aria-label="Banff postcard art coming soon">
+                  <Mountain size={58} strokeWidth={1.5} />
+                  <span>postcard coming soon</span>
+                </div>
+              )}
+            </div>
+            <div className="banff-copy">
+              <p className="banff-kicker">Our little mountain adventure</p>
+              <h1 id="banff-postcard-title">{banffPostcard.title}</h1>
+              <p className="banff-message">{banffPostcard.message}</p>
+              <p className="banff-progress">August {31 - banffPostcard.daysRemaining} · Adventure {17 - banffPostcard.daysRemaining} of 17</p>
+            </div>
+            <button type="button" className="banff-nest-button" onClick={() => setShowBanffPostcard(false)}>
+              back to the nest
+            </button>
+          </section>
+        </div>
+      )}
+
       {showUpdateBanner && (
         <div className="update-banner" role="status">
           <span>Update: the sloth added messages on Jul 19! 💌</span>
@@ -451,6 +576,17 @@ export default function App() {
               <span>{Math.floor(stars)}/{maxStars}</span>
             </div>
             <div className="flex gap-1">
+                {banffPostcard && (
+                  <button
+                    type="button"
+                    onClick={openBanffPostcard}
+                    className="banff-nav-button"
+                    aria-label={`Open vacation postcard: ${banffPostcard.title}`}
+                  >
+                    <Mountain size={18} />
+                    {!hasSeenBanffPostcard && <span className="banff-notification" aria-hidden="true" />}
+                  </button>
+                )}
                 {navItems.map(item => (
                     <button key={item.id} onClick={() => setView(item.id)} className={`p-2 rounded-full ${view === item.id ? 'bg-rose-100 text-rose-600' : 'text-slate-400'}`}>
                         <item.icon size={18}/>

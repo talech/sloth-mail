@@ -8,6 +8,168 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.banff-nav-button {
+  position: relative;
+  display: grid;
+  width: 2.15rem;
+  height: 2.15rem;
+  place-items: center;
+  border: 1px solid rgb(125 176 164 / 70%);
+  border-radius: 9999px;
+  background: rgb(236 253 245);
+  color: rgb(21 128 111);
+  box-shadow: 0 5px 14px rgb(15 118 110 / 12%);
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.banff-nav-button:hover {
+  background: rgb(209 250 229);
+  box-shadow: 0 7px 18px rgb(15 118 110 / 18%);
+  transform: translateY(-1px);
+}
+
+.banff-nav-button:focus-visible,
+.banff-close:focus-visible,
+.banff-nest-button:focus-visible {
+  outline: 2px solid rgb(45 212 191 / 75%);
+  outline-offset: 2px;
+}
+
+.banff-notification {
+  position: absolute;
+  top: -0.08rem;
+  right: -0.08rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 2px solid white;
+  border-radius: 9999px;
+  background: rgb(244 63 94);
+}
+
+.banff-backdrop {
+  position: fixed;
+  z-index: 48;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(6 78 89 / 30%);
+  backdrop-filter: blur(8px);
+  animation: news-backdrop-in 220ms ease-out;
+}
+
+.banff-postcard {
+  position: relative;
+  width: min(100%, 22rem);
+  overflow: hidden;
+  border: 1px solid rgb(167 243 208);
+  border-radius: 1.5rem;
+  background: rgb(255 253 247);
+  box-shadow: 0 26px 75px rgb(6 78 59 / 25%);
+  text-align: center;
+  animation: welcome-back-pop 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.banff-close {
+  position: absolute;
+  z-index: 2;
+  top: 0.7rem;
+  right: 0.7rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgb(167 243 208);
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 92%);
+  color: rgb(15 118 110);
+  box-shadow: 0 6px 18px rgb(6 78 59 / 13%);
+}
+
+.banff-art {
+  display: grid;
+  aspect-ratio: 4 / 3;
+  place-items: center;
+  padding: 0.8rem 0.8rem 0;
+  background: linear-gradient(180deg, rgb(236 253 245), rgb(255 253 247));
+}
+
+.banff-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 1rem;
+}
+
+.banff-art-placeholder {
+  display: grid;
+  gap: 0.5rem;
+  place-items: center;
+  color: rgb(13 148 136 / 68%);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.banff-copy {
+  display: grid;
+  gap: 0.42rem;
+  padding: 1rem 1.35rem 0.85rem;
+}
+
+.banff-kicker {
+  color: rgb(13 148 136);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.banff-copy h1 {
+  color: rgb(19 78 74);
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.banff-message {
+  color: rgb(71 85 105);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.banff-progress {
+  margin-top: 0.15rem;
+  color: rgb(148 163 184);
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.banff-nest-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 2rem);
+  min-height: 2.55rem;
+  margin: 0 1rem 1.1rem;
+  border: 1px solid rgb(13 148 136 / 45%);
+  border-radius: 9999px;
+  background: rgb(15 118 110);
+  color: white;
+  font-size: 0.84rem;
+  font-weight: 900;
+  box-shadow: 0 11px 25px rgb(15 118 110 / 22%);
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.banff-nest-button:hover {
+  background: rgb(17 94 89);
+  transform: translateY(-1px);
+}
+
 .update-banner {
   display: flex;
   align-items: center;
@@ -77,6 +239,42 @@ button:disabled {
   box-shadow: 0 24px 70px rgb(88 28 135 / 22%);
   text-align: center;
   animation: welcome-back-pop 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.welcome-back-modal-banff {
+  border-color: rgb(167 243 208);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 97%), rgb(240 253 250 / 98%)),
+    rgb(255 255 255);
+  box-shadow: 0 24px 70px rgb(6 78 59 / 22%);
+}
+
+.welcome-back-modal-banff .welcome-back-art {
+  min-height: 11.5rem;
+}
+
+.welcome-back-modal-banff .welcome-back-art img {
+  width: min(100%, 18rem);
+  height: 11rem;
+}
+
+.welcome-back-modal-banff .welcome-back-kicker {
+  color: rgb(13 148 136);
+}
+
+.welcome-back-modal-banff .welcome-back-copy h1 {
+  color: rgb(19 78 74);
+}
+
+.welcome-back-modal-banff .welcome-back-button {
+  border-color: rgb(13 148 136 / 45%);
+  background: rgb(15 118 110);
+  box-shadow: 0 12px 26px rgb(15 118 110 / 22%);
+}
+
+.welcome-back-modal-banff .welcome-back-button:hover {
+  background: rgb(17 94 89);
+  box-shadow: 0 14px 30px rgb(15 118 110 / 27%);
 }
 
 .welcome-back-sparkles {
