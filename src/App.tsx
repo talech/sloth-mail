@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown, Mountain, X } from 'lucide-react';
+import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown, ChevronLeft, ChevronRight, Mountain, X } from 'lucide-react';
 
 const SAVE_KEY = 'slothmail-save-v1';
 const LIMITED_NEWS_KEY = 'slothmail-limited-news-flash-seen-v1';
@@ -254,16 +254,13 @@ const freshSave: SaveData = {
 
 const getTodayKey = () => new Date().toLocaleDateString('en-CA');
 
-const getBanffPostcard = (): BanffPostcard | null => {
+const getBanffDateKey = () => {
   const previewDate = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('banffDate') : null;
-  const dateKey = previewDate ?? getTodayKey();
-  const match = /^2026-08-(\d{2})$/.exec(dateKey);
+  return previewDate ?? getTodayKey();
+};
 
-  if (!match) return null;
-
-  const day = Number(match[1]);
-  if (day < 15 || day > 31) return null;
-
+const makeBanffPostcard = (day: number): BanffPostcard => {
+  const dateKey = `2026-08-${String(day).padStart(2, '0')}`;
   const daysRemaining = 31 - day;
 
   if (daysRemaining === 0) {
@@ -283,6 +280,26 @@ const getBanffPostcard = (): BanffPostcard | null => {
     message: banffMessages[daysRemaining],
     title: `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} to Banff`,
   };
+};
+
+const getBanffCollection = (): BanffPostcard[] => {
+  const dateKey = getBanffDateKey();
+  if (dateKey < '2026-08-15') return [];
+  if (dateKey > '2026-08-31') {
+    return Array.from({ length: 17 }, (_, index) => makeBanffPostcard(15 + index));
+  }
+  if (!dateKey.startsWith('2026-08-')) return [];
+
+  const latestDay = Math.min(Number(dateKey.slice(-2)), 31);
+
+  if (latestDay < 15) return [];
+  return Array.from({ length: latestDay - 14 }, (_, index) => makeBanffPostcard(15 + index));
+};
+
+const getBanffWelcomePostcard = (): BanffPostcard | null => {
+  const dateKey = getBanffDateKey();
+  if (dateKey < '2026-08-15' || dateKey > '2026-08-31') return null;
+  return makeBanffPostcard(Number(dateKey.slice(-2)));
 };
 
 const getWelcomePostcardImage = (postcard: BanffPostcard) => {
@@ -353,14 +370,18 @@ export default function App() {
   const [limitedNews, setLimitedNews] = useState(getLimitedNews);
   const [showWelcomeBack, setShowWelcomeBack] = useState(() => isWelcomeBackPreview() || shouldShowWelcomeBack(save.lastOpenedAt));
   const [showUpdateBanner, setShowUpdateBanner] = useState(shouldShowUpdateBanner);
-  const [banffPostcard] = useState(getBanffPostcard);
+  const [banffCollection] = useState(getBanffCollection);
+  const [banffPostcardIndex, setBanffPostcardIndex] = useState(() => Math.max(getBanffCollection().length - 1, 0));
+  const [banffWelcomePostcard] = useState(getBanffWelcomePostcard);
   const [showBanffPostcard, setShowBanffPostcard] = useState(false);
   const [banffImageMissing, setBanffImageMissing] = useState(false);
   const [welcomePostcardMissing, setWelcomePostcardMissing] = useState(false);
   const [hasSeenBanffPostcard, setHasSeenBanffPostcard] = useState(() => {
-    const postcard = getBanffPostcard();
+    const collection = getBanffCollection();
+    const postcard = collection[collection.length - 1];
     return postcard ? localStorage.getItem(`${BANFF_SEEN_KEY_PREFIX}${postcard.dateKey}`) === 'true' : true;
   });
+  const banffPostcard = banffCollection[banffPostcardIndex] ?? null;
   const canClaimDaily = lastDailyClaim !== getTodayKey();
   const currentMouse = mouseEmotes[activeMouse];
 
@@ -431,10 +452,17 @@ export default function App() {
   const dismissLimitedNews = () => setLimitedNews(null);
   const dismissWelcomeBack = () => setShowWelcomeBack(false);
   const openBanffPostcard = () => {
-    if (!banffPostcard) return;
-    localStorage.setItem(`${BANFF_SEEN_KEY_PREFIX}${banffPostcard.dateKey}`, 'true');
+    const newestPostcard = banffCollection[banffCollection.length - 1];
+    if (!newestPostcard) return;
+    localStorage.setItem(`${BANFF_SEEN_KEY_PREFIX}${newestPostcard.dateKey}`, 'true');
     setHasSeenBanffPostcard(true);
+    setBanffPostcardIndex(banffCollection.length - 1);
+    setBanffImageMissing(false);
     setShowBanffPostcard(true);
+  };
+  const browseBanffPostcard = (nextIndex: number) => {
+    setBanffImageMissing(false);
+    setBanffPostcardIndex(Math.max(0, Math.min(nextIndex, banffCollection.length - 1)));
   };
   const dismissUpdateBanner = () => {
     localStorage.setItem(UPDATE_BANNER_SEEN_KEY, 'true');
@@ -448,7 +476,7 @@ export default function App() {
       {showWelcomeBack && (
         <div className="welcome-back-backdrop" role="presentation">
           <section
-            className={`welcome-back-modal ${banffPostcard ? 'welcome-back-modal-banff' : ''}`}
+            className={`welcome-back-modal ${banffWelcomePostcard ? 'welcome-back-modal-banff' : ''}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="welcome-back-title"
@@ -460,15 +488,15 @@ export default function App() {
             </div>
             <div className="welcome-back-art">
               <img
-                src={banffPostcard && !welcomePostcardMissing ? getWelcomePostcardImage(banffPostcard) : './sloth/sloth-message.png'}
-                alt={banffPostcard && !welcomePostcardMissing ? 'A postcard for our upcoming Banff adventure' : 'Sloth holding a sweet message'}
+                src={banffWelcomePostcard && !welcomePostcardMissing ? getWelcomePostcardImage(banffWelcomePostcard) : './sloth/sloth-message.png'}
+                alt={banffWelcomePostcard && !welcomePostcardMissing ? 'A postcard for our upcoming Banff adventure' : 'Sloth holding a sweet message'}
                 onError={() => setWelcomePostcardMissing(true)}
               />
             </div>
             <div className="welcome-back-copy">
-              <p className="welcome-back-kicker">{banffPostcard ? 'A tiny vacation postcard' : 'SlothMail missed you'}</p>
-              <h1 id="welcome-back-title">{banffPostcard ? banffPostcard.title : 'Welcome Back'}</h1>
-              <p>{banffPostcard ? banffPostcard.message : 'The tiny inbox stayed warm while you were away.'}</p>
+              <p className="welcome-back-kicker">{banffWelcomePostcard ? 'A tiny vacation postcard' : 'SlothMail missed you'}</p>
+              <h1 id="welcome-back-title">{banffWelcomePostcard ? banffWelcomePostcard.title : 'Welcome Back'}</h1>
+              <p>{banffWelcomePostcard ? banffWelcomePostcard.message : 'The tiny inbox stayed warm while you were away.'}</p>
             </div>
             <button
               type="button"
@@ -520,14 +548,6 @@ export default function App() {
             aria-modal="true"
             aria-labelledby="banff-postcard-title"
           >
-            <button
-              type="button"
-              className="banff-close"
-              onClick={() => setShowBanffPostcard(false)}
-              aria-label="Close Banff postcard"
-            >
-              <X size={16} />
-            </button>
             <div className="banff-art">
               {!banffImageMissing ? (
                 <img
@@ -547,6 +567,25 @@ export default function App() {
               <h1 id="banff-postcard-title">{banffPostcard.title}</h1>
               <p className="banff-message">{banffPostcard.message}</p>
               <p className="banff-progress">August {31 - banffPostcard.daysRemaining} · Adventure {17 - banffPostcard.daysRemaining} of 17</p>
+            </div>
+            <div className="banff-collection-controls" aria-label="Browse Banff postcard collection">
+              <button
+                type="button"
+                onClick={() => browseBanffPostcard(banffPostcardIndex - 1)}
+                disabled={banffPostcardIndex === 0}
+                aria-label="Previous Banff postcard"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span>{banffPostcardIndex + 1} of {banffCollection.length} unveiled</span>
+              <button
+                type="button"
+                onClick={() => browseBanffPostcard(banffPostcardIndex + 1)}
+                disabled={banffPostcardIndex === banffCollection.length - 1}
+                aria-label="Next Banff postcard"
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
             <button type="button" className="banff-nest-button" onClick={() => setShowBanffPostcard(false)}>
               back to the nest
@@ -576,12 +615,12 @@ export default function App() {
               <span>{Math.floor(stars)}/{maxStars}</span>
             </div>
             <div className="flex gap-1">
-                {banffPostcard && (
+                {banffCollection.length > 0 && (
                   <button
                     type="button"
                     onClick={openBanffPostcard}
                     className="banff-nav-button"
-                    aria-label={`Open vacation postcard: ${banffPostcard.title}`}
+                    aria-label="Open Banff postcard collection"
                   >
                     <Mountain size={18} />
                     {!hasSeenBanffPostcard && <span className="banff-notification" aria-hidden="true" />}

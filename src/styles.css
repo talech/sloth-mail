@@ -29,7 +29,7 @@ button:disabled {
 }
 
 .banff-nav-button:focus-visible,
-.banff-close:focus-visible,
+.banff-collection-controls button:focus-visible,
 .banff-nest-button:focus-visible {
   outline: 2px solid rgb(45 212 191 / 75%);
   outline-offset: 2px;
@@ -68,22 +68,6 @@ button:disabled {
   box-shadow: 0 26px 75px rgb(6 78 59 / 25%);
   text-align: center;
   animation: welcome-back-pop 420ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.banff-close {
-  position: absolute;
-  z-index: 2;
-  top: 0.7rem;
-  right: 0.7rem;
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  place-items: center;
-  border: 1px solid rgb(167 243 208);
-  border-radius: 9999px;
-  background: rgb(255 255 255 / 92%);
-  color: rgb(15 118 110);
-  box-shadow: 0 6px 18px rgb(6 78 59 / 13%);
 }
 
 .banff-art {
@@ -146,6 +130,41 @@ button:disabled {
   color: rgb(148 163 184);
   font-size: 0.66rem;
   font-weight: 800;
+}
+
+.banff-collection-controls {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr 2.25rem;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0 1rem 0.9rem;
+}
+
+.banff-collection-controls button {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid rgb(13 148 136 / 35%);
+  border-radius: 9999px;
+  background: rgb(240 253 250);
+  color: rgb(15 118 110);
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.banff-collection-controls button:hover:not(:disabled) {
+  background: rgb(204 251 241);
+  transform: translateY(-1px);
+}
+
+.banff-collection-controls button:disabled {
+  opacity: 0.32;
+}
+
+.banff-collection-controls span {
+  color: rgb(100 116 139);
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
 .banff-nest-button {
