@@ -30,9 +30,69 @@ const banffMessages: Record<number, string> = {
 type BanffPostcard = {
   dateKey: string;
   daysRemaining: number;
+  dateLabel: string;
+  adventureNumber: number;
   image: string;
   message: string;
   title: string;
+};
+
+const banffTripPostcards: BanffPostcard[] = [
+  {
+    dateKey: '2026-09-01',
+    daysRemaining: 0,
+    dateLabel: 'September 1',
+    adventureNumber: 18,
+    image: './banff/banff-day-1.png',
+    title: 'Waterfall day!',
+    message: 'Sloth and mouse found a waterfall so big that even their tiniest thoughts went quiet for a minute. 🐭🦥💦⛰️',
+  },
+  {
+    dateKey: '2026-09-02',
+    daysRemaining: 0,
+    dateLabel: 'September 2',
+    adventureNumber: 19,
+    image: './banff/banff-day-2.png',
+    title: 'Up, up, and away!',
+    message: 'The gondola did the climbing first. Then six tiny paws took over—with Fox providing excellent tea support.🚡🦥🐭🦊🫖',
+  },
+  {
+    dateKey: '2026-09-03',
+    daysRemaining: 0,
+    dateLabel: 'September 3',
+    adventureNumber: 20,
+    image: './banff/banff-day-3.png',
+    title: 'High ropes, low urgency',
+    message: 'Mouse and sloth clipped in for one brave little rope adventure. Fox courageously stayed at the lodge, dillydallying over tea. 🦥🐭🧗🦊☕️',
+  },
+  {
+    dateKey: '2026-09-04',
+    daysRemaining: 0,
+    dateLabel: 'September 4',
+    adventureNumber: 21,
+    image: './banff/banff-day-4.png',
+    title: 'One last mountain wander',
+    message: 'One last lake, one last little trail, and one more beautiful view to tuck safely inside our hearts. 💜🏔️🩵',
+  },
+  {
+    dateKey: '2026-09-05',
+    daysRemaining: 0,
+    dateLabel: 'September 5',
+    adventureNumber: 22,
+    image: './banff/banff-sloth-return.png',
+    title: 'Two little paths home',
+    message: 'Mouse keeps adventuring in Edmonton while Sloth flies home to Florida, where Mr. Harley has been saving up a welcome-home wiggle. ✈️🐾💜',
+  },
+];
+
+const septemberSixWelcome: BanffPostcard = {
+  dateKey: '2026-09-06',
+  daysRemaining: 0,
+  dateLabel: 'September 6',
+  adventureNumber: 22,
+  image: './limited/sloth-morning.jpeg',
+  title: 'Un cafecito desde lejos',
+  message: 'Te mando un cafecito rico from far away. 💜☕️🐭',
 };
 
 type LimitedNews = { image: string; alt: string; message: string; isPreview?: boolean };
@@ -267,6 +327,8 @@ const makeBanffPostcard = (day: number): BanffPostcard => {
     return {
       dateKey,
       daysRemaining,
+      dateLabel: 'August 31',
+      adventureNumber: 17,
       image: './banff/banff-day.png',
       message: 'Tiny bags packed. Little hearts full. Mountain adventure activated. 🦥🐭🏔️',
       title: 'Banff day is here!',
@@ -276,6 +338,8 @@ const makeBanffPostcard = (day: number): BanffPostcard => {
   return {
     dateKey,
     daysRemaining,
+    dateLabel: `August ${day}`,
+    adventureNumber: day - 14,
     image: `./banff/banff-${daysRemaining}.png`,
     message: banffMessages[daysRemaining],
     title: `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} to Banff`,
@@ -285,27 +349,37 @@ const makeBanffPostcard = (day: number): BanffPostcard => {
 const getBanffCollection = (): BanffPostcard[] => {
   const dateKey = getBanffDateKey();
   if (dateKey < '2026-08-15') return [];
-  if (dateKey > '2026-08-31') {
-    return Array.from({ length: 17 }, (_, index) => makeBanffPostcard(15 + index));
-  }
-  if (!dateKey.startsWith('2026-08-')) return [];
-
-  const latestDay = Math.min(Number(dateKey.slice(-2)), 31);
-
-  if (latestDay < 15) return [];
-  return Array.from({ length: latestDay - 14 }, (_, index) => makeBanffPostcard(15 + index));
+  const countdownPostcards = Array.from({ length: 17 }, (_, index) => makeBanffPostcard(15 + index));
+  return [...countdownPostcards, ...banffTripPostcards].filter(postcard => postcard.dateKey <= dateKey);
 };
 
 const getBanffWelcomePostcard = (): BanffPostcard | null => {
   const dateKey = getBanffDateKey();
-  if (dateKey < '2026-08-15' || dateKey > '2026-08-31') return null;
-  return makeBanffPostcard(Number(dateKey.slice(-2)));
+  if (dateKey === '2026-09-06') return septemberSixWelcome;
+  if (dateKey < '2026-08-15' || dateKey > '2026-09-05') return null;
+  if (dateKey.startsWith('2026-08-')) return makeBanffPostcard(Number(dateKey.slice(-2)));
+  return banffTripPostcards.find(postcard => postcard.dateKey === dateKey) ?? null;
 };
 
 const getWelcomePostcardImage = (postcard: BanffPostcard) => {
+  if (postcard.dateKey.startsWith('2026-09-')) return postcard.image;
   const day = Number(postcard.dateKey.slice(-2));
   return `./banff/welcome-postcard-${day % 2 === 1 ? 1 : 2}.png`;
 };
+
+const getWelcomePostcardKicker = (postcard: BanffPostcard) => (
+  postcard.dateKey === '2026-09-06'
+    ? 'A tiny long-distance morning'
+    : postcard.dateKey === '2026-09-05'
+    ? 'The adventure carries on'
+    : postcard.dateKey.startsWith('2026-09-') ? 'SlothMail: Adventure Mode' : 'A tiny vacation postcard'
+);
+
+const getWelcomePostcardTitle = (postcard: BanffPostcard) => (
+  postcard.dateKey >= '2026-09-01' && postcard.dateKey <= '2026-09-04'
+    ? 'We’re in the Adventure!'
+    : postcard.title
+);
 
 const getLimitedNews = () => {
   const previewDate = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('limitedNews') : null;
@@ -494,8 +568,8 @@ export default function App() {
               />
             </div>
             <div className="welcome-back-copy">
-              <p className="welcome-back-kicker">{banffWelcomePostcard ? 'A tiny vacation postcard' : 'SlothMail missed you'}</p>
-              <h1 id="welcome-back-title">{banffWelcomePostcard ? banffWelcomePostcard.title : 'Welcome Back'}</h1>
+              <p className="welcome-back-kicker">{banffWelcomePostcard ? getWelcomePostcardKicker(banffWelcomePostcard) : 'SlothMail missed you'}</p>
+              <h1 id="welcome-back-title">{banffWelcomePostcard ? getWelcomePostcardTitle(banffWelcomePostcard) : 'Welcome Back'}</h1>
               <p>{banffWelcomePostcard ? banffWelcomePostcard.message : 'The tiny inbox stayed warm while you were away.'}</p>
             </div>
             <button
@@ -566,7 +640,7 @@ export default function App() {
               <p className="banff-kicker">Our little mountain adventure</p>
               <h1 id="banff-postcard-title">{banffPostcard.title}</h1>
               <p className="banff-message">{banffPostcard.message}</p>
-              <p className="banff-progress">August {31 - banffPostcard.daysRemaining} · Adventure {17 - banffPostcard.daysRemaining} of 17</p>
+              <p className="banff-progress">{banffPostcard.dateLabel} · Adventure {banffPostcard.adventureNumber} of 22</p>
             </div>
             <div className="banff-collection-controls" aria-label="Browse Banff postcard collection">
               <button
