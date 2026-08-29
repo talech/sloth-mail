@@ -137,7 +137,39 @@ const dailyBank = [
   "The sloth believes in you with frankly unreasonable intensity. 🦥⭐",
   "Your tiredness is real. Your sweetness is also real. Both can exist together. 💜🐭",
   "You make the world softer just by being in it. 🌎💞",
-  "Hey sleepy love. I hope today surprises you with at least one tiny moment that feels light again. 🌈🐭"
+  "Hey sleepy love. I hope today surprises you with at least one tiny moment that feels light again. 🌈🐭",
+  "Good morning, little mouse. You do not have to be impressive today. You only have to be here, and maybe locate a tiny snack. 🐭🍪",
+  "The sloth checked today’s forecast: scattered softness, warm cuddles, and a very high chance of being loved. 🦥☁️",
+  "You are not behind, Cuchito. You are moving at the exact speed your little heart can manage today. 🌱💜",
+  "Today has been officially placed under gentle creature rules. Drink water, take breaks, and no being mean to the mouse. 📜🐭",
+  "Somewhere between waking up and trying your best, please remember that you are already enough for me. ☀️💞",
+  "Tiny morning assignment: find one cozy thing, one tasty thing, and one reason to be extra gentle with yourself. 🛏️🍓",
+  "The sloth packed you a pocket-sized supply of courage. It may look suspiciously like a little kiss. 🦥💋",
+  "If today becomes too loud, come back to one breath, one sip, and one tiny moment at a time. 🌿💧",
+  "Breaking news: local mouse woke up adorable again. Scientists remain completely baffled. 📰🐭",
+  "You are allowed to have a soft little life, even while you are figuring everything else out. 🌸🏡",
+  "No tienes que poder con todo hoy. Your sloth is here to help carry the heavy little pieces. 🦥💜",
+  "Today’s productivity goal is extremely reasonable: remain a beloved woodland creature until bedtime. 🌲💤",
+  "Even when you feel a little lost, you are still someone’s favorite place to come home to. 🏡🐭",
+  "Your tiny battery does not determine your worth. You are just as precious in low-power mode. 🪫✨",
+  "May today bring you one unexpectedly good sip, one comfortable sigh, and one reason to smile without trying. ☕️🌤️",
+  "The mouse does not need to earn his morning cuddle. This is a cuddle-based economy, and he is already wealthy. 🫂🐭",
+  "If all you can do today is protect your peace and keep your little heart warm, that is important work. 🕯️💜",
+  "You have survived every strange little day that brought you here. The sloth thinks that deserves a forehead kiss. 🦥⭐",
+  "Whatever kind of mouse you are today—sleepy, brave, foggy, silly—you are exactly the mouse I want to love. 🐭💜"
+];
+
+const farAwayDailyBank = [
+  "A tiny reminder from far away: distance has never made you any less held, known, or loved. 💌🌎",
+  "Sending one long-distance forehead kiss. Please place it gently above your tiny mouse eyebrows. 💋🐭",
+  "The miles between us are real, but so is the little invisible string that keeps my heart close to yours. 🧵💜",
+  "Today’s care package contains one warm hug, three tiny kisses, and a reminder that I am thinking about you. 📦🫂",
+  "Good morning from far away, Cuchito. You are still the very first tiny creature my heart goes looking for. ☀️🐭",
+  "Distance update: the mouse remains deeply loved, terribly missed, and scheduled for future cuddles. 📍💞",
+  "If you miss me today, hold this little message close. There is a sleepy sloth hug folded inside. 💌🦥",
+  "Different cities, same little orbit. My heart keeps finding its way back to you. 🌎✨",
+  "Te mando un apapacho pequeñito desde lejos. It should arrive directly in your heart pocket. 🫂💌",
+  "The sloth is far away, but sloth love has excellent Wi-Fi and remains fully connected to the mouse. 🦥📶🐭",
 ];
 
 const messageBank = [
@@ -314,6 +346,21 @@ const freshSave: SaveData = {
 
 const getTodayKey = () => new Date().toLocaleDateString('en-CA');
 
+const getDailyDateKey = () => (
+  import.meta.env.DEV
+    ? new URLSearchParams(window.location.search).get('dailyDate') ?? getTodayKey()
+    : getTodayKey()
+);
+
+const isFarAwayDailyDate = (dateKey: string) => dateKey >= '2026-09-06' && dateKey <= '2026-09-10';
+
+const getAvailableDailyMessages = () => {
+  const dateKey = getDailyDateKey();
+  return isFarAwayDailyDate(dateKey)
+    ? farAwayDailyBank
+    : dailyBank;
+};
+
 const getBanffDateKey = () => {
   const previewDate = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('banffDate') : null;
   return previewDate ?? getTodayKey();
@@ -456,7 +503,9 @@ export default function App() {
     return postcard ? localStorage.getItem(`${BANFF_SEEN_KEY_PREFIX}${postcard.dateKey}`) === 'true' : true;
   });
   const banffPostcard = banffCollection[banffPostcardIndex] ?? null;
-  const canClaimDaily = lastDailyClaim !== getTodayKey();
+  const dailyDateKey = getDailyDateKey();
+  const isFarAwayDaily = isFarAwayDailyDate(dailyDateKey);
+  const canClaimDaily = lastDailyClaim !== dailyDateKey;
   const currentMouse = mouseEmotes[activeMouse];
 
   useEffect(() => {
@@ -537,6 +586,16 @@ export default function App() {
   const browseBanffPostcard = (nextIndex: number) => {
     setBanffImageMissing(false);
     setBanffPostcardIndex(Math.max(0, Math.min(nextIndex, banffCollection.length - 1)));
+  };
+  const claimDailySurprise = () => {
+    const availableMessages = getAvailableDailyMessages();
+    setLastDailyClaim(dailyDateKey);
+    setActiveMouse("happy");
+    revealMessage({
+      title: isFarAwayDaily ? "Treat from Far Away" : "Daily Gift",
+      text: availableMessages[Math.floor(Math.random() * availableMessages.length)],
+      tag: isFarAwayDaily ? "FROM FAR AWAY" : "DAILY",
+    });
   };
   const dismissUpdateBanner = () => {
     localStorage.setItem(UPDATE_BANNER_SEEN_KEY, 'true');
@@ -764,8 +823,8 @@ export default function App() {
             </div>
 
             {canClaimDaily && (
-                <button onClick={() => {setLastDailyClaim(getTodayKey()); setActiveMouse("happy"); revealMessage({title:"Daily Gift", text:dailyBank[Math.floor(Math.random()*dailyBank.length)], tag:"DAILY"});}} className="w-full py-2 bg-purple-100 rounded-xl text-purple-700 font-bold text-xs flex items-center justify-center gap-2">
-                    <Gift size={14}/> Claim Daily Surprise
+                <button onClick={claimDailySurprise} className="w-full py-2 bg-purple-100 rounded-xl text-purple-700 font-bold text-xs flex items-center justify-center gap-2">
+                    <Gift size={14}/> {isFarAwayDaily ? 'Claim Treat from Far Away' : 'Claim Daily Surprise'}
                 </button>
             )}
 
