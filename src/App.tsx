@@ -129,10 +129,10 @@ const banffTripPostcards: BanffPostcard[] = [
   },
 ];
 
-const septemberSixWelcome: BanffPostcard = {
-  dateKey: '2026-09-06',
+const septemberSevenWelcome: BanffPostcard = {
+  dateKey: '2026-09-07',
   daysRemaining: 0,
-  dateLabel: 'September 6',
+  dateLabel: 'September 7',
   adventureNumber: 22,
   image: './limited/sloth-morning.jpeg',
   title: 'Un cafecito desde lejos',
@@ -446,7 +446,7 @@ const getBanffCollection = (): BanffPostcard[] => {
 
 const getBanffWelcomePostcard = (): BanffPostcard | null => {
   const dateKey = getBanffDateKey();
-  if (dateKey === '2026-09-06') return septemberSixWelcome;
+  if (dateKey === '2026-09-07') return septemberSevenWelcome;
   if (dateKey < '2026-08-15' || dateKey > '2026-09-05') return null;
   if (dateKey.startsWith('2026-08-')) return makeBanffPostcard(Number(dateKey.slice(-2)));
   return banffTripPostcards.find(postcard => postcard.dateKey === dateKey) ?? null;
@@ -459,7 +459,7 @@ const getWelcomePostcardImage = (postcard: BanffPostcard) => {
 };
 
 const getWelcomePostcardKicker = (postcard: BanffPostcard) => (
-  postcard.dateKey === '2026-09-06'
+  postcard.dateKey === '2026-09-07'
     ? 'A tiny long-distance morning'
     : postcard.dateKey === '2026-09-05'
     ? 'The adventure carries on'
