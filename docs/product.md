@@ -51,7 +51,7 @@ be lost when browser data is cleared.
 - Mouse reactions and replies.
 - Limited-date news and welcome-back moments.
 - Banff countdown and trip postcards.
-- A date-gated comfort kit with small interactive scenes.
+- A comfort kit with date-gated arrivals that remain accessible after the final day.
 - A subtle time-machine memory.
 
 This list describes the current product, not a commitment to preserve every

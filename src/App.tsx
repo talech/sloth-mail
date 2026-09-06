@@ -19,17 +19,18 @@ type ComfortItem = {
   instruction: string;
   completeText: string;
   actionText: string;
+  travelText?: string;
   taps: number;
   scene: string;
 };
 
 const comfortItems: ComfortItem[] = [
   { dateKey: '2026-09-06', dateLabel: 'Sep 6', emoji: '🫂', title: 'Pocket Hug', instruction: 'Press and hold until the cuddle arrives.', completeText: 'Hug delivered. The miles are still here, but so am I. 💜', actionText: 'press & hold for a hug', taps: 1, scene: 'hug' },
-  { dateKey: '2026-09-07', dateLabel: 'Sep 7', emoji: '💋', title: 'Forehead Kiss', instruction: 'A tiny kiss is waiting beside Sloth. Send it to Mouse.', completeText: 'Mwah. It landed right above your tiny mouse eyebrows.', actionText: 'send the kiss', taps: 1, scene: 'kiss' },
-  { dateKey: '2026-09-08', dateLabel: 'Sep 8', emoji: '📦', title: 'Emergency Snack', instruction: '', completeText: 'One restorative healthy and comfy treat, packed with love by your sloth.', actionText: 'tap', taps: 3, scene: 'snack' },
-  { dateKey: '2026-09-09', dateLabel: 'Sep 9', emoji: '🧣', title: 'Traveling Blanket', instruction: 'Pull the blanket across the invisible string, one cozy tug at a time.', completeText: 'Mouse is tucked in. The blanket smells faintly like home and sloth cuddles.', actionText: 'pull the blanket', taps: 3, scene: 'blanket' },
-  { dateKey: '2026-09-10', dateLabel: 'Sep 10', emoji: '🍃', title: 'The Worry Leaf', instruction: 'Place one heavy little thought on the leaf, then help it float to Sloth.', completeText: 'Sloth caught it. You do not have to carry that thought alone anymore.', actionText: 'send the worry leaf', taps: 3, scene: 'leaf' },
-  { dateKey: '2026-09-11', dateLabel: 'Sep 11', emoji: '🏡', title: 'The Way Home', instruction: 'Light the string, one little star at a time.', completeText: 'Every tiny light leads back to us. Come home when you’re ready, Mouse. ✨', actionText: 'light the next star', taps: 4, scene: 'home' },
+  { dateKey: '2026-09-07', dateLabel: 'Sep 7', emoji: '💋', title: 'Forehead Kiss', instruction: 'Tap three times quickly to send this tiny kiss flying to Mouse.', completeText: 'Mwah! It landed right above your tiny mouse eyebrows. 💕', actionText: 'tap quickly!', travelText: 'floating your way', taps: 3, scene: 'kiss' },
+  { dateKey: '2026-09-08', dateLabel: 'Sep 8', emoji: '📦', title: 'Emergency Snack', instruction: '', completeText: 'One restorative healthy and comfy treat, packed with love by your sloth.', actionText: 'tap', travelText: 'crossing the miles', taps: 3, scene: 'snack' },
+  { dateKey: '2026-09-09', dateLabel: 'Sep 9', emoji: '🧣', title: 'Traveling Blanket', instruction: 'Pull the blanket across the invisible string, one cozy tug at a time.', completeText: 'Mouse is tucked in. The blanket smells faintly like home and sloth cuddles.', actionText: 'pull the blanket', travelText: 'taking the cozy route', taps: 3, scene: 'blanket' },
+  { dateKey: '2026-09-10', dateLabel: 'Sep 10', emoji: '🍃', title: 'The Worry Leaf', instruction: 'Place one heavy little thought on the leaf, then help it float to Sloth.', completeText: 'Sloth caught it. You do not have to carry that thought alone anymore.', actionText: 'send the worry leaf', travelText: 'almost in your paws', taps: 3, scene: 'leaf' },
+  { dateKey: '2026-09-11', dateLabel: 'Sep 11', emoji: '🏡', title: 'The Way Home', instruction: 'Light the string, one little star at a time.', completeText: 'Every tiny light leads back to us. Come home when you’re ready, Mouse. ✨', actionText: 'light the next star', travelText: 'viajando con amor', taps: 4, scene: 'home' },
 ];
 
 const hugHeartColors = [
@@ -565,6 +566,12 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
     };
   }, [isHolding]);
 
+  useEffect(() => {
+    if (activeItem?.scene !== 'kiss' || progress === 0 || progress >= activeItem.taps) return;
+    const resetTimer = window.setTimeout(() => setProgress(0), 900);
+    return () => window.clearTimeout(resetTimer);
+  }, [activeItem, progress]);
+
   const cooldownRemaining = activeItem
     ? Math.max(0, COMFORT_REGEN_MS - (now - (saved.usedAt[activeItem.dateKey] ?? 0)))
     : 0;
@@ -636,6 +643,12 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
                 </div>
               )}
               {activeItem.scene === 'kiss' && <span className="comfort-kiss" aria-hidden="true">💋</span>}
+              {activeItem.scene === 'kiss' && isComplete && (
+                <div className="comfort-kiss-burst" aria-hidden="true">
+                  <span>♥</span><span>♡</span><span>✦</span><span>♥</span><span>♡</span><span>✧</span>
+                  <b>MUAAAA!</b>
+                </div>
+              )}
               {activeItem.scene === 'snack' && <><span className="comfort-snack-box" aria-hidden="true">📦</span><span className="comfort-treats" aria-hidden="true">🍪 🥛 🍎 🧃 ☕</span></>}
               {activeItem.scene === 'blanket' && <span className="comfort-blanket" aria-hidden="true" />}
               {activeItem.scene === 'leaf' && <><span className="comfort-thought" aria-hidden="true">one heavy thought</span><span className="comfort-leaf" aria-hidden="true">🍃</span></>}
@@ -670,7 +683,11 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
               </button>
             ) : (
               <button type="button" className="comfort-action" onClick={advanceItem} disabled={isComplete}>
-                {isComplete ? `regenerating in ${Math.ceil(cooldownRemaining / 1000)}s` : activeItem.actionText}
+                {isComplete
+                  ? `regenerating in ${Math.ceil(cooldownRemaining / 1000)}s`
+                  : activeItem.scene === 'kiss' && progress > 0
+                    ? progress === 1 ? 'again!' : 'one more!'
+                    : activeItem.actionText}
               </button>
             )}
             {!isComplete && activeItem.taps > 1 && activeItem.scene !== 'snack' && <p className="comfort-progress">{progress} of {activeItem.taps} tiny steps</p>}
@@ -690,15 +707,17 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
                 return (
                   <button key={item.dateKey} type="button" className={`comfort-compartment ${unlocked ? 'is-unlocked' : 'is-locked'} ${opened ? 'is-opened' : ''}`} onClick={() => openItem(item)} disabled={!unlocked}>
                     <span className="comfort-compartment-number">{index + 1}</span>
-                    <span className={`comfort-compartment-emoji ${item.scene === 'hug' && opened ? 'comfort-compartment-emoji-memory' : ''}`}>
+                    <span className={`comfort-compartment-emoji ${['hug', 'kiss'].includes(item.scene) && opened ? 'comfort-compartment-emoji-memory' : ''}`}>
                       {unlocked ? (
-                        item.scene === 'hug' && opened
+                        opened && item.scene === 'hug'
                           ? <img className="comfort-compartment-memory" src="./limited/pocket-hug-open.png" alt="Sloth hugging Mouse" />
-                          : item.emoji
+                          : opened && item.scene === 'kiss'
+                            ? <img className="comfort-compartment-memory" src="./limited/forehead-kiss-open.png" alt="Sloth giving Mouse a forehead kiss" />
+                            : item.emoji
                       ) : <LockKeyhole size={19} />}
                     </span>
                     <strong>{unlocked ? item.title : item.dateLabel}</strong>
-                    <small>{opened ? 'open again' : unlocked ? 'a surprise is waiting' : 'still traveling'}</small>
+                    {(!opened || !unlocked) && <small>{unlocked ? 'a surprise is waiting' : item.travelText ?? 'still traveling'}</small>}
                   </button>
                 );
               })}
@@ -753,8 +772,8 @@ export default function App() {
   const banffPostcard = banffCollection[banffPostcardIndex] ?? null;
   const dailyDateKey = getDailyDateKey();
   const comfortDateKey = getComfortDateKey();
-  const comfortKitAvailable = comfortDateKey >= '2026-09-06' && comfortDateKey <= '2026-09-11';
-  const hasNewComfort = comfortKitAvailable && comfortLastSeen !== comfortDateKey;
+  const comfortKitAvailable = comfortDateKey >= '2026-09-06';
+  const hasNewComfort = comfortKitAvailable && comfortDateKey <= '2026-09-11' && comfortLastSeen !== comfortDateKey;
   const isFarAwayDaily = isFarAwayDailyDate(dailyDateKey);
   const canClaimDaily = lastDailyClaim !== dailyDateKey;
   const currentMouse = mouseEmotes[activeMouse];
