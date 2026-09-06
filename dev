@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+cd "$(dirname "$0")"
+
+CODEX_NODE="/Users/tammy/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node"
+
+if [[ ! -x "$CODEX_NODE" ]]; then
+  echo "SlothMail could not find the bundled Node runtime."
+  echo "Ask Codex to start the local server for you."
+  exit 1
+fi
+
+exec "$CODEX_NODE" node_modules/vite/bin/vite.js "$@"

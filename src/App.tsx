@@ -32,6 +32,22 @@ const comfortItems: ComfortItem[] = [
   { dateKey: '2026-09-11', dateLabel: 'Sep 11', emoji: '🏡', title: 'The Way Home', instruction: 'Light the string, one little star at a time.', completeText: 'Every tiny light leads back to us. Come home when you’re ready, Mouse. ✨', actionText: 'light the next star', taps: 4, scene: 'home' },
 ];
 
+const hugHeartColors = [
+  { color: '#e879f9', glow: 'rgb(244 114 182 / 52%)' },
+  { color: '#f472b6', glow: 'rgb(236 72 153 / 48%)' },
+  { color: '#fb7185', glow: 'rgb(251 113 133 / 48%)' },
+  { color: '#c084fc', glow: 'rgb(167 139 250 / 52%)' },
+  { color: '#f59e9e', glow: 'rgb(251 146 160 / 48%)' },
+  { color: '#5eead4', glow: 'rgb(45 212 191 / 42%)' },
+] as const;
+
+type HugHeartColor = (typeof hugHeartColors)[number];
+
+const pickAnotherHugColor = (currentColor: string) => {
+  const choices = hugHeartColors.filter(option => option.color !== currentColor);
+  return choices[Math.floor(Math.random() * choices.length)];
+};
+
 const getComfortDateKey = () => {
   const preview = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('comfortDate') : null;
   return preview ?? new Date().toLocaleDateString('en-CA');
@@ -519,6 +535,8 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
   const [activeItem, setActiveItem] = useState<ComfortItem | null>(null);
   const [progress, setProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
+  const [holdMessageStep, setHoldMessageStep] = useState(0);
+  const [hugHeartColor, setHugHeartColor] = useState<HugHeartColor>(hugHeartColors[0]);
   const [now, setNow] = useState(Date.now);
   const unlockedCount = comfortItems.filter(item => item.dateKey <= today).length;
 
@@ -531,6 +549,21 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
     const timer = window.setInterval(() => setNow(Date.now()), 500);
     return () => window.clearInterval(timer);
   }, [activeItem, progress]);
+
+  useEffect(() => {
+    if (!isHolding) {
+      setHoldMessageStep(0);
+      return;
+    }
+
+    const almostTimer = window.setTimeout(() => setHoldMessageStep(1), 1100);
+    const tinyBitTimer = window.setTimeout(() => setHoldMessageStep(2), 2200);
+
+    return () => {
+      window.clearTimeout(almostTimer);
+      window.clearTimeout(tinyBitTimer);
+    };
+  }, [isHolding]);
 
   const cooldownRemaining = activeItem
     ? Math.max(0, COMFORT_REGEN_MS - (now - (saved.usedAt[activeItem.dateKey] ?? 0)))
@@ -577,7 +610,13 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
         {activeItem ? (
           <>
             <button type="button" className="comfort-back" onClick={() => setActiveItem(null)}>← care package</button>
-            <div className={`comfort-scene comfort-scene-${activeItem.scene} comfort-progress-${progress} ${isHolding ? 'is-active' : ''} ${isComplete ? 'is-complete' : ''}`}>
+            <div
+              className={`comfort-scene comfort-scene-${activeItem.scene} comfort-progress-${progress} ${isHolding ? 'is-active' : ''} ${isComplete ? 'is-complete' : ''}`}
+              style={activeItem.scene === 'hug' ? {
+                '--hug-heart-color': hugHeartColor.color,
+                '--hug-heart-glow': hugHeartColor.glow,
+              } as React.CSSProperties : undefined}
+            >
               <div className="comfort-sky" aria-hidden="true"><span>✦</span><span>·</span><span>✧</span></div>
               <div className="comfort-string" aria-hidden="true">
                 {Array.from({ length: 4 }, (_, index) => <i key={index} className={index < progress ? 'lit' : ''}>✦</i>)}
@@ -611,13 +650,23 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
               <button
                 type="button"
                 className={`comfort-action comfort-hold ${isHolding ? 'is-holding' : ''}`}
-                onPointerDown={() => !isComplete && setIsHolding(true)}
+                onPointerDown={() => {
+                  if (isComplete) return;
+                  setHugHeartColor(current => pickAnotherHugColor(current.color));
+                  setIsHolding(true);
+                }}
                 onPointerUp={() => setIsHolding(false)}
                 onPointerCancel={() => setIsHolding(false)}
                 onPointerLeave={() => setIsHolding(false)}
                 onAnimationEnd={() => isHolding && activeItem && finishItem(activeItem)}
               >
-                <span>{isComplete ? `another hug in ${Math.ceil(cooldownRemaining / 1000)}s` : isHolding ? 'keep holding…' : activeItem.actionText}</span>
+                <span>{
+                  isComplete
+                    ? `another hug in ${Math.ceil(cooldownRemaining / 1000)}s`
+                    : isHolding
+                      ? ['keep holding…', 'ya casi…', 'tantito más…'][holdMessageStep]
+                      : activeItem.actionText
+                }</span>
               </button>
             ) : (
               <button type="button" className="comfort-action" onClick={advanceItem} disabled={isComplete}>
@@ -632,7 +681,7 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
               <span className="comfort-package-icon" aria-hidden="true">💝</span>
               <p className="comfort-kicker">Emergency long-distance supplies</p>
               <h1 id="comfort-title">In Case You Need Me</h1>
-              <p>Unos apapachos viajando hasta ti por nuestro thread invisible.</p>
+              <p>Seis apapachos para sentirnos cerquita, uno para cada día.</p>
             </div>
             <div className="comfort-grid">
               {comfortItems.map((item, index) => {
