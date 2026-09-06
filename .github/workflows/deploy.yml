@@ -12,7 +12,9 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # Let an active publish finish before a newer push deploys. Canceling during
+  # the handoff can leave Pages temporarily serving mismatched site files.
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -32,7 +34,7 @@ jobs:
       - name: Set up Pages
         uses: actions/configure-pages@v5
       - name: Upload site
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
