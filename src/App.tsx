@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, BookOpen, Mail, TrendingUp, Gift, ChevronDown, ChevronLeft, ChevronRight, Mountain, X } from 'lucide-react';
+import { Star, BookOpen, Gift, ChevronDown, ChevronLeft, ChevronRight, Mountain, Heart, LockKeyhole, X } from 'lucide-react';
 
 const SAVE_KEY = 'slothmail-save-v1';
 const LIMITED_NEWS_KEY = 'slothmail-limited-news-flash-seen-v1';
@@ -7,6 +7,50 @@ const UPDATE_BANNER_SEEN_KEY = 'slothmail-jul-19-message-update-seen-v1';
 const UPDATE_BANNER_EXPIRES_AT = '2026-07-20T18:54:00-04:00';
 const WELCOME_BACK_AFTER_MS = 8 * 60 * 60 * 1000;
 const BANFF_SEEN_KEY_PREFIX = 'slothmail-banff-postcard-seen-';
+const COMFORT_KIT_KEY = 'slothmail-comfort-kit-v1';
+const COMFORT_WELCOME_KEY = 'slothmail-comfort-welcome-seen-v1';
+const COMFORT_REGEN_MS = 30 * 1000;
+
+type ComfortItem = {
+  dateKey: string;
+  dateLabel: string;
+  emoji: string;
+  title: string;
+  instruction: string;
+  completeText: string;
+  actionText: string;
+  taps: number;
+  scene: string;
+};
+
+const comfortItems: ComfortItem[] = [
+  { dateKey: '2026-09-06', dateLabel: 'Sep 6', emoji: '🫂', title: 'Pocket Hug', instruction: 'Press and hold until the cuddle arrives.', completeText: 'Hug delivered. The miles are still here, but so am I. 💜', actionText: 'press & hold for a hug', taps: 1, scene: 'hug' },
+  { dateKey: '2026-09-07', dateLabel: 'Sep 7', emoji: '💋', title: 'Forehead Kiss', instruction: 'A tiny kiss is waiting beside Sloth. Send it to Mouse.', completeText: 'Mwah. It landed right above your tiny mouse eyebrows.', actionText: 'send the kiss', taps: 1, scene: 'kiss' },
+  { dateKey: '2026-09-08', dateLabel: 'Sep 8', emoji: '📦', title: 'Emergency Snack', instruction: '', completeText: 'One restorative healthy and comfy treat, packed with love by your sloth.', actionText: 'tap', taps: 3, scene: 'snack' },
+  { dateKey: '2026-09-09', dateLabel: 'Sep 9', emoji: '🧣', title: 'Traveling Blanket', instruction: 'Pull the blanket across the invisible string, one cozy tug at a time.', completeText: 'Mouse is tucked in. The blanket smells faintly like home and sloth cuddles.', actionText: 'pull the blanket', taps: 3, scene: 'blanket' },
+  { dateKey: '2026-09-10', dateLabel: 'Sep 10', emoji: '🍃', title: 'The Worry Leaf', instruction: 'Place one heavy little thought on the leaf, then help it float to Sloth.', completeText: 'Sloth caught it. You do not have to carry that thought alone anymore.', actionText: 'send the worry leaf', taps: 3, scene: 'leaf' },
+  { dateKey: '2026-09-11', dateLabel: 'Sep 11', emoji: '🏡', title: 'The Way Home', instruction: 'Light the string, one little star at a time.', completeText: 'Every tiny light leads back to us. Come home when you’re ready, Mouse. ✨', actionText: 'light the next star', taps: 4, scene: 'home' },
+];
+
+const getComfortDateKey = () => {
+  const preview = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('comfortDate') : null;
+  return preview ?? new Date().toLocaleDateString('en-CA');
+};
+
+type ComfortSave = { opened: string[]; lastSeenDate: string | null; usedAt: Record<string, number> };
+
+const loadComfortKit = (): ComfortSave => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COMFORT_KIT_KEY) ?? '');
+    return {
+      opened: Array.isArray(saved.opened) ? saved.opened.filter((value: unknown) => typeof value === 'string') : [],
+      lastSeenDate: typeof saved.lastSeenDate === 'string' ? saved.lastSeenDate : null,
+      usedAt: saved.usedAt && typeof saved.usedAt === 'object' ? saved.usedAt : {},
+    };
+  } catch {
+    return { opened: [], lastSeenDate: null, usedAt: {} };
+  }
+};
 
 const banffMessages: Record<number, string> = {
   16: 'Two little adventurers are dreaming of lakes the color of magic. 🩵💜✨',
@@ -470,6 +514,138 @@ const loadSave = (): SaveData => {
   }
 };
 
+function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) {
+  const [saved, setSaved] = useState(loadComfortKit);
+  const [activeItem, setActiveItem] = useState<ComfortItem | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [isHolding, setIsHolding] = useState(false);
+  const [now, setNow] = useState(Date.now);
+  const unlockedCount = comfortItems.filter(item => item.dateKey <= today).length;
+
+  useEffect(() => {
+    localStorage.setItem(COMFORT_KIT_KEY, JSON.stringify(saved));
+  }, [saved]);
+
+  useEffect(() => {
+    if (!activeItem || progress < activeItem.taps) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 500);
+    return () => window.clearInterval(timer);
+  }, [activeItem, progress]);
+
+  const cooldownRemaining = activeItem
+    ? Math.max(0, COMFORT_REGEN_MS - (now - (saved.usedAt[activeItem.dateKey] ?? 0)))
+    : 0;
+  const isComplete = activeItem ? progress >= activeItem.taps && cooldownRemaining > 0 : false;
+
+  useEffect(() => {
+    if (activeItem && progress >= activeItem.taps && cooldownRemaining === 0) {
+      setProgress(0);
+      setIsHolding(false);
+    }
+  }, [activeItem, cooldownRemaining, progress]);
+
+  const openItem = (item: ComfortItem) => {
+    if (item.dateKey > today) return;
+    setActiveItem(item);
+    const stillRegenerating = Date.now() - (saved.usedAt[item.dateKey] ?? 0) < COMFORT_REGEN_MS;
+    setNow(Date.now());
+    setProgress(stillRegenerating ? item.taps : 0);
+    setIsHolding(false);
+  };
+
+  const finishItem = (item: ComfortItem) => {
+    setProgress(item.taps);
+    setNow(Date.now());
+    setSaved(current => ({
+      ...current,
+      opened: current.opened.includes(item.dateKey) ? current.opened : [...current.opened, item.dateKey],
+      usedAt: { ...current.usedAt, [item.dateKey]: Date.now() },
+    }));
+  };
+
+  const advanceItem = () => {
+    if (!activeItem || progress >= activeItem.taps) return;
+    const next = progress + 1;
+    setProgress(next);
+    if (next >= activeItem.taps) finishItem(activeItem);
+  };
+
+  return (
+    <div className="comfort-backdrop" role="presentation">
+      <section className="comfort-modal" role="dialog" aria-modal="true" aria-labelledby="comfort-title">
+        <button type="button" className="comfort-close" onClick={onClose} aria-label="Close comfort kit"><X size={16} /></button>
+        {activeItem ? (
+          <>
+            <button type="button" className="comfort-back" onClick={() => setActiveItem(null)}>← care package</button>
+            <div className={`comfort-scene comfort-scene-${activeItem.scene} comfort-progress-${progress} ${isHolding ? 'is-active' : ''} ${isComplete ? 'is-complete' : ''}`}>
+              <div className="comfort-sky" aria-hidden="true"><span>✦</span><span>·</span><span>✧</span></div>
+              <div className="comfort-string" aria-hidden="true">
+                {Array.from({ length: 4 }, (_, index) => <i key={index} className={index < progress ? 'lit' : ''}>✦</i>)}
+              </div>
+              <span className="comfort-sloth" aria-hidden="true">🦥</span>
+              <span className="comfort-gift" aria-hidden="true">{activeItem.emoji}</span>
+              <span className="comfort-mouse" aria-hidden="true">🐭</span>
+              {activeItem.scene === 'hug' && <><span className="comfort-hug-heart" aria-hidden="true">♥</span><span className="comfort-hug-sparkles" aria-hidden="true">♡ ♥ ♡</span></>}
+              {activeItem.scene === 'kiss' && <span className="comfort-kiss" aria-hidden="true">💋</span>}
+              {activeItem.scene === 'snack' && <><span className="comfort-snack-box" aria-hidden="true">📦</span><span className="comfort-treats" aria-hidden="true">🍪 🥛 🍎 🧃 ☕</span></>}
+              {activeItem.scene === 'blanket' && <span className="comfort-blanket" aria-hidden="true" />}
+              {activeItem.scene === 'leaf' && <><span className="comfort-thought" aria-hidden="true">one heavy thought</span><span className="comfort-leaf" aria-hidden="true">🍃</span></>}
+              {activeItem.scene === 'home' && <span className="comfort-home" aria-hidden="true">🏡</span>}
+            </div>
+            <div className="comfort-copy">
+              <p className="comfort-kicker">{activeItem.dateLabel} · just for Mouse</p>
+              <h1 id="comfort-title">{activeItem.title}</h1>
+              {(isComplete || activeItem.instruction) && <p className={isComplete ? 'comfort-complete-text' : ''}>{isComplete ? activeItem.completeText : activeItem.instruction}</p>}
+            </div>
+            {activeItem.scene === 'hug' ? (
+              <button
+                type="button"
+                className={`comfort-action comfort-hold ${isHolding ? 'is-holding' : ''}`}
+                onPointerDown={() => !isComplete && setIsHolding(true)}
+                onPointerUp={() => setIsHolding(false)}
+                onPointerCancel={() => setIsHolding(false)}
+                onPointerLeave={() => setIsHolding(false)}
+                onAnimationEnd={() => isHolding && activeItem && finishItem(activeItem)}
+              >
+                <span>{isComplete ? `another hug in ${Math.ceil(cooldownRemaining / 1000)}s` : isHolding ? 'keep holding…' : activeItem.actionText}</span>
+              </button>
+            ) : (
+              <button type="button" className="comfort-action" onClick={advanceItem} disabled={isComplete}>
+                {isComplete ? `regenerating in ${Math.ceil(cooldownRemaining / 1000)}s` : activeItem.actionText}
+              </button>
+            )}
+            {!isComplete && activeItem.taps > 1 && activeItem.scene !== 'snack' && <p className="comfort-progress">{progress} of {activeItem.taps} tiny steps</p>}
+          </>
+        ) : (
+          <>
+            <div className="comfort-package-top">
+              <span className="comfort-package-icon" aria-hidden="true">💝</span>
+              <p className="comfort-kicker">Emergency long-distance supplies</p>
+              <h1 id="comfort-title">In Case You Need Me</h1>
+              <p>Six little comforts traveling along the invisible string.</p>
+            </div>
+            <div className="comfort-grid">
+              {comfortItems.map((item, index) => {
+                const unlocked = item.dateKey <= today;
+                const opened = saved.opened.includes(item.dateKey);
+                return (
+                  <button key={item.dateKey} type="button" className={`comfort-compartment ${unlocked ? 'is-unlocked' : 'is-locked'} ${opened ? 'is-opened' : ''}`} onClick={() => openItem(item)} disabled={!unlocked}>
+                    <span className="comfort-compartment-number">{index + 1}</span>
+                    <span className="comfort-compartment-emoji">{unlocked ? item.emoji : <LockKeyhole size={19} />}</span>
+                    <strong>{unlocked ? item.title : item.dateLabel}</strong>
+                    <small>{opened ? 'open again' : unlocked ? 'a surprise is waiting' : 'still traveling'}</small>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="comfort-footer">{unlockedCount} of 6 comforts have arrived · none expire</p>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
 export default function App() {
   const [save] = useState(loadSave);
   const [openedAt] = useState(() => new Date().toISOString());
@@ -502,8 +678,18 @@ export default function App() {
     const postcard = collection[collection.length - 1];
     return postcard ? localStorage.getItem(`${BANFF_SEEN_KEY_PREFIX}${postcard.dateKey}`) === 'true' : true;
   });
+  const [showComfortKit, setShowComfortKit] = useState(false);
+  const [showTimeMachine, setShowTimeMachine] = useState(false);
+  const [showComfortWelcome, setShowComfortWelcome] = useState(() => (
+    (import.meta.env.DEV && new URLSearchParams(window.location.search).get('comfortWelcome') === '1')
+    || (getComfortDateKey() === '2026-09-06' && localStorage.getItem(COMFORT_WELCOME_KEY) !== 'true')
+  ));
+  const [comfortLastSeen, setComfortLastSeen] = useState(() => loadComfortKit().lastSeenDate);
   const banffPostcard = banffCollection[banffPostcardIndex] ?? null;
   const dailyDateKey = getDailyDateKey();
+  const comfortDateKey = getComfortDateKey();
+  const comfortKitAvailable = comfortDateKey >= '2026-09-06' && comfortDateKey <= '2026-09-11';
+  const hasNewComfort = comfortKitAvailable && comfortLastSeen !== comfortDateKey;
   const isFarAwayDaily = isFarAwayDailyDate(dailyDateKey);
   const canClaimDaily = lastDailyClaim !== dailyDateKey;
   const currentMouse = mouseEmotes[activeMouse];
@@ -601,11 +787,31 @@ export default function App() {
     localStorage.setItem(UPDATE_BANNER_SEEN_KEY, 'true');
     setShowUpdateBanner(false);
   };
+  const openComfortKit = () => {
+    const current = loadComfortKit();
+    localStorage.setItem(COMFORT_KIT_KEY, JSON.stringify({ ...current, lastSeenDate: comfortDateKey }));
+    setComfortLastSeen(comfortDateKey);
+    localStorage.setItem(COMFORT_WELCOME_KEY, 'true');
+    setShowComfortWelcome(false);
+    setShowComfortKit(true);
+  };
 
-  const navItems = [{ id: 'main', icon: Mail }, { id: 'journal', icon: BookOpen }, { id: 'upgrades', icon: TrendingUp }];
+  const navItems = [{ id: 'journal', icon: BookOpen }];
 
   return (
     <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center p-2 font-sans text-slate-800">
+      {showComfortWelcome && !showComfortKit && (
+        <div className="comfort-welcome-backdrop" role="presentation">
+          <section className="comfort-welcome" role="dialog" aria-modal="true" aria-labelledby="comfort-welcome-title">
+            <img className="comfort-welcome-art" src="./limited/sloth-mail.png" alt="A little sloth holding a heart-sealed envelope" />
+            <h1 id="comfort-welcome-title">¡En caso de emergencias!</h1>
+            <p>Un apapacho para cada día.</p>
+            <button type="button" className="comfort-action" onClick={openComfortKit}>open my care package</button>
+            <button type="button" className="comfort-welcome-later" onClick={() => setShowComfortWelcome(false)}>save it for later</button>
+          </section>
+        </div>
+      )}
+      {showComfortKit && <ComfortKit today={comfortDateKey} onClose={() => setShowComfortKit(false)} />}
       {showWelcomeBack && (
         <div className="welcome-back-backdrop" role="presentation">
           <section
@@ -748,6 +954,12 @@ export default function App() {
               <span>{Math.floor(stars)}/{maxStars}</span>
             </div>
             <div className="flex gap-1">
+                {comfortKitAvailable && (
+                  <button type="button" onClick={openComfortKit} className="comfort-nav-button" aria-label="Open In Case You Need Me care package">
+                    <Heart size={18} className="fill-current" />
+                    {hasNewComfort && <span className="comfort-notification" aria-hidden="true" />}
+                  </button>
+                )}
                 {banffCollection.length > 0 && (
                   <button
                     type="button"
@@ -760,7 +972,7 @@ export default function App() {
                   </button>
                 )}
                 {navItems.map(item => (
-                    <button key={item.id} onClick={() => setView(item.id)} className={`p-2 rounded-full ${view === item.id ? 'bg-rose-100 text-rose-600' : 'text-slate-400'}`}>
+                    <button key={item.id} aria-label={view === item.id ? 'Close message collection' : 'Open message collection'} onClick={() => setView(current => current === item.id ? 'main' : item.id)} className={`p-2 rounded-full ${view === item.id ? 'bg-rose-100 text-rose-600' : 'text-slate-400'}`}>
                         <item.icon size={18}/>
                     </button>
                 ))}
@@ -835,6 +1047,17 @@ export default function App() {
                   <span className="text-[8px] font-bold uppercase">{t.label}</span>
                 </button>
               ))}
+            </div>
+
+            <div className="time-machine">
+              <button type="button" className="time-machine-trigger" onClick={() => !showTimeMachine && setShowTimeMachine(true)}>
+                Time Machine
+              </button>
+              {showTimeMachine && (
+                <figure className="time-machine-memory" onAnimationEnd={() => setShowTimeMachine(false)}>
+                  <img src="./limited/time-machine.jpg" alt="A sweet old Photo Booth memory" />
+                </figure>
+              )}
             </div>
         </>
         )}
