@@ -586,6 +586,16 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
               <span className="comfort-gift" aria-hidden="true">{activeItem.emoji}</span>
               <span className="comfort-mouse" aria-hidden="true">🐭</span>
               {activeItem.scene === 'hug' && <><span className="comfort-hug-heart" aria-hidden="true">♥</span><span className="comfort-hug-sparkles" aria-hidden="true">♡ ♥ ♡</span></>}
+              {activeItem.scene === 'hug' && isComplete && (
+                <div className="comfort-love-burst" aria-hidden="true">
+                  {['♥', '♡', '✦', '♥', '✧', '♡', '♥', '✦', '♡', '♥', '✧', '♥'].map((symbol, index) => (
+                    <span key={index} style={{ '--burst-index': index } as React.CSSProperties}>{symbol}</span>
+                  ))}
+                  <i className="comfort-love-ring ring-one" />
+                  <i className="comfort-love-ring ring-two" />
+                  <b>SQUEEZE!</b>
+                </div>
+              )}
               {activeItem.scene === 'kiss' && <span className="comfort-kiss" aria-hidden="true">💋</span>}
               {activeItem.scene === 'snack' && <><span className="comfort-snack-box" aria-hidden="true">📦</span><span className="comfort-treats" aria-hidden="true">🍪 🥛 🍎 🧃 ☕</span></>}
               {activeItem.scene === 'blanket' && <span className="comfort-blanket" aria-hidden="true" />}
@@ -622,7 +632,7 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
               <span className="comfort-package-icon" aria-hidden="true">💝</span>
               <p className="comfort-kicker">Emergency long-distance supplies</p>
               <h1 id="comfort-title">In Case You Need Me</h1>
-              <p>Six little comforts traveling along the invisible string.</p>
+              <p>Unos apapachos viajando hasta ti por nuestro thread invisible.</p>
             </div>
             <div className="comfort-grid">
               {comfortItems.map((item, index) => {
@@ -631,7 +641,13 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
                 return (
                   <button key={item.dateKey} type="button" className={`comfort-compartment ${unlocked ? 'is-unlocked' : 'is-locked'} ${opened ? 'is-opened' : ''}`} onClick={() => openItem(item)} disabled={!unlocked}>
                     <span className="comfort-compartment-number">{index + 1}</span>
-                    <span className="comfort-compartment-emoji">{unlocked ? item.emoji : <LockKeyhole size={19} />}</span>
+                    <span className={`comfort-compartment-emoji ${item.scene === 'hug' && opened ? 'comfort-compartment-emoji-memory' : ''}`}>
+                      {unlocked ? (
+                        item.scene === 'hug' && opened
+                          ? <img className="comfort-compartment-memory" src="./limited/pocket-hug-open.png" alt="Sloth hugging Mouse" />
+                          : item.emoji
+                      ) : <LockKeyhole size={19} />}
+                    </span>
                     <strong>{unlocked ? item.title : item.dateLabel}</strong>
                     <small>{opened ? 'open again' : unlocked ? 'a surprise is waiting' : 'still traveling'}</small>
                   </button>
