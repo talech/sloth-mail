@@ -16,6 +16,16 @@ Progress is automatically saved in the visitor's browser. It survives refreshes
 and return visits on the same browser and device. Clearing browser data or using
 a different device starts a fresh save.
 
+## Project documentation
+
+- [`AGENTS.md`](AGENTS.md) contains working conventions and verification steps.
+- [`docs/product.md`](docs/product.md) describes the product, voice, and user
+  experience principles.
+- [`docs/architecture.md`](docs/architecture.md) describes the runtime,
+  persistence, scheduled behavior, and deployment model.
+- [`docs/decisions/`](docs/decisions/) is reserved for consequential
+  architectural decisions.
+
 ## Publish with GitHub Pages
 
 1. Create an empty GitHub repository and name its default branch `main`.
