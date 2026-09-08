@@ -27,9 +27,9 @@ type ComfortItem = {
 const comfortItems: ComfortItem[] = [
   { dateKey: '2026-09-06', dateLabel: 'Sep 6', emoji: '🫂', title: 'Pocket Hug', instruction: 'Press and hold until the cuddle arrives.', completeText: 'Hug delivered. The miles are still here, but so am I. 💜', actionText: 'press & hold for a hug', taps: 1, scene: 'hug' },
   { dateKey: '2026-09-07', dateLabel: 'Sep 7', emoji: '💋', title: 'Forehead Kiss', instruction: 'Tap three times quickly to send this tiny kiss flying to Mouse.', completeText: 'Mwah! It landed right above your tiny mouse eyebrows. 💕', actionText: 'tap quickly!', travelText: 'floating your way', taps: 3, scene: 'kiss' },
-  { dateKey: '2026-09-08', dateLabel: 'Sep 8', emoji: '📦', title: 'Emergency Snack', instruction: '', completeText: 'Snacky escogido por el corazón de tu Puki', actionText: 'tap', travelText: 'crossing the miles', taps: 5, scene: 'snack' },
-  { dateKey: '2026-09-09', dateLabel: 'Sep 9', emoji: '🧣', title: 'Traveling Blanket', instruction: 'Drag the blanket from left to right until it reaches Mouse.', completeText: 'Mouse is tucked in. The blanket smells faintly like home and sloth cuddles.', actionText: 'pull left to right', travelText: 'taking the cozy route', taps: 2, scene: 'blanket' },
-  { dateKey: '2026-09-10', dateLabel: 'Sep 10', emoji: '🍃', title: 'The Worry Leaf', instruction: 'Place one heavy little thought on the leaf, then help it float to Sloth.', completeText: 'Sloth caught it. You do not have to carry that thought alone anymore.', actionText: 'send the worry leaf', travelText: 'almost in your paws', taps: 3, scene: 'leaf' },
+  { dateKey: '2026-09-08', dateLabel: 'Sep 8', emoji: '📦', title: 'Emergency Snack', instruction: 'Tap to open your snack box.', completeText: 'Snacky escogido por el corazón de tu Puki', actionText: 'tap', travelText: 'crossing the miles', taps: 5, scene: 'snack' },
+  { dateKey: '2026-09-09', dateLabel: 'Sep 9', emoji: '🧣', title: 'Traveling Blanket', instruction: 'Drag the blanket from left to right until it reaches Mouse.', completeText: 'Mouse is tucked in. The blanket smells faintly like home and sloth cuddles.', actionText: 'pull left to right', travelText: 'taking the cozy route', taps: 3, scene: 'blanket' },
+  { dateKey: '2026-09-10', dateLabel: 'Sep 10', emoji: '🍃', title: 'The Worry Leaf', instruction: 'Slide the worry leaf from right to left until it reaches Sloth.', completeText: 'Sloth caught it. You do not have to carry that thought alone anymore.', actionText: 'slide right to left', travelText: 'almost in your paws', taps: 3, scene: 'leaf' },
   { dateKey: '2026-09-11', dateLabel: 'Sep 11', emoji: '🏡', title: 'The Way Home', instruction: 'Light the string, one little star at a time.', completeText: 'Every tiny light leads back to us. You are almost home Cuchis. ✨', actionText: 'light the next star', travelText: 'viajando con amor', taps: 4, scene: 'home' },
 ];
 
@@ -554,9 +554,13 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
   const [holdMessageStep, setHoldMessageStep] = useState(0);
   const [hugHeartColor, setHugHeartColor] = useState<HugHeartColor>(hugHeartColors[0]);
   const [snack, setSnack] = useState<SnackOption>(snackOptions[0]);
+  const [blanketPull, setBlanketPull] = useState(0);
+  const [leafPull, setLeafPull] = useState(0);
   const [now, setNow] = useState(Date.now);
   const blanketDragStart = useRef<number | null>(null);
   const blanketDragMoved = useRef(false);
+  const leafDragStart = useRef<number | null>(null);
+  const leafDragMoved = useRef(false);
   const unlockedCount = comfortItems.filter(item => item.dateKey <= today).length;
 
   useEffect(() => {
@@ -600,6 +604,8 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
       setProgress(0);
       setIsHolding(false);
       if (activeItem.scene === 'snack') setSnack(current => pickAnotherSnack(current.emoji));
+      if (activeItem.scene === 'blanket') setBlanketPull(0);
+      if (activeItem.scene === 'leaf') setLeafPull(0);
     }
   }, [activeItem, cooldownRemaining, progress]);
 
@@ -610,12 +616,16 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
     setNow(Date.now());
     setProgress(stillRegenerating ? item.taps : 0);
     setIsHolding(false);
+    setBlanketPull(item.scene === 'blanket' && stillRegenerating ? 1 : 0);
+    setLeafPull(item.scene === 'leaf' && stillRegenerating ? 1 : 0);
     if (item.scene === 'snack' && !stillRegenerating) {
       setSnack(current => pickAnotherSnack(current.emoji));
     }
   };
 
   const finishItem = (item: ComfortItem) => {
+    if (item.scene === 'blanket') setBlanketPull(1);
+    if (item.scene === 'leaf') setLeafPull(1);
     setProgress(item.taps);
     setNow(Date.now());
     setSaved(current => ({
@@ -635,12 +645,14 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
   const moveBlanket = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (!activeItem || activeItem.scene !== 'blanket' || isComplete || blanketDragStart.current === null) return;
     const distance = Math.max(0, event.clientX - blanketDragStart.current);
+    const pull = Math.min(1, distance / 150);
     if (distance > 8) blanketDragMoved.current = true;
-    if (distance >= 120) {
+    setBlanketPull(pull);
+    if (distance >= 150) {
       blanketDragStart.current = null;
       finishItem(activeItem);
     } else {
-      setProgress(distance >= 52 ? 1 : 0);
+      setProgress(distance >= 100 ? 2 : distance >= 48 ? 1 : 0);
     }
   };
 
@@ -648,6 +660,28 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
     if (blanketDragStart.current === null) return;
     blanketDragStart.current = null;
     setProgress(0);
+    setBlanketPull(0);
+  };
+
+  const moveLeaf = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (!activeItem || activeItem.scene !== 'leaf' || isComplete || leafDragStart.current === null) return;
+    const distance = Math.max(0, leafDragStart.current - event.clientX);
+    const pull = Math.min(1, distance / 150);
+    if (distance > 8) leafDragMoved.current = true;
+    setLeafPull(pull);
+    if (distance >= 150) {
+      leafDragStart.current = null;
+      finishItem(activeItem);
+    } else {
+      setProgress(distance >= 100 ? 2 : distance >= 48 ? 1 : 0);
+    }
+  };
+
+  const endLeafDrag = () => {
+    if (leafDragStart.current === null) return;
+    leafDragStart.current = null;
+    setProgress(0);
+    setLeafPull(0);
   };
 
   return (
@@ -662,11 +696,18 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
               style={activeItem.scene === 'hug' ? {
                 '--hug-heart-color': hugHeartColor.color,
                 '--hug-heart-glow': hugHeartColor.glow,
+              } as React.CSSProperties : activeItem.scene === 'leaf' ? {
+                '--leaf-pull': leafPull,
               } as React.CSSProperties : undefined}
             >
               <div className="comfort-sky" aria-hidden="true"><span>✦</span><span>·</span><span>✧</span></div>
               <div className="comfort-string" aria-hidden="true">
-                {Array.from({ length: 4 }, (_, index) => <i key={index} className={index < progress ? 'lit' : ''}>✦</i>)}
+                {Array.from({ length: activeItem.scene === 'home' ? 9 : 4 }, (_, index) => (
+                  <i
+                    key={index}
+                    className={index < (activeItem.scene === 'home' ? Math.ceil(progress * 9 / activeItem.taps) : progress) ? 'lit' : ''}
+                  >{activeItem.scene === 'home' ? ['✦', '★', '✧', '✦', '★', '✧', '★', '✦', '✧'][index] : '✦'}</i>
+                ))}
               </div>
               <span className="comfort-sloth" aria-hidden="true">🦥</span>
               <span className="comfort-gift" aria-hidden="true">{activeItem.emoji}</span>
@@ -705,9 +746,30 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
                   )}
                 </>
               )}
-              {activeItem.scene === 'blanket' && <span className="comfort-blanket" style={{ backgroundImage: "url('./limited/traveling-blanket-states.png')" }} aria-hidden="true" />}
-              {activeItem.scene === 'leaf' && <><span className="comfort-thought" aria-hidden="true">one heavy thought</span><span className="comfort-leaf" aria-hidden="true">🍃</span></>}
+              {activeItem.scene === 'blanket' && (
+                <span className="comfort-blanket" style={{ '--blanket-pull': blanketPull } as React.CSSProperties} aria-hidden="true">
+                  {[1, 2, 3, 4].map((state, index) => (
+                    <img
+                      key={state}
+                      className={index === Math.min(progress, 3) ? 'is-visible' : ''}
+                      src={`./limited/traveling-blanket-${state}.png`}
+                      alt=""
+                    />
+                  ))}
+                </span>
+              )}
+              {activeItem.scene === 'leaf' && <><span className="comfort-worry-clouds" aria-hidden="true"><i>☁</i><i>☁</i><i>☁</i></span><span className="comfort-thought" aria-hidden="true">one heavy thought</span><span className="comfort-leaf" aria-hidden="true">🍃</span></>}
               {activeItem.scene === 'home' && <span className="comfort-home" aria-hidden="true">🏡</span>}
+              {activeItem.scene === 'home' && isComplete && (
+                <div className="comfort-home-celebration" aria-hidden="true">
+                  {['★', '✦', '♥', '★', '✧', '♥', '✦', '★', '♡', '✧', '★', '♥'].map((symbol, index) => (
+                    <span key={index} style={{ '--home-spark-index': index } as React.CSSProperties}>{symbol}</span>
+                  ))}
+                  <i className="comfort-home-ring ring-one" />
+                  <i className="comfort-home-ring ring-two" />
+                  <b>HOME ✨</b>
+                </div>
+              )}
             </div>
             <div className="comfort-copy">
               <p id="comfort-title" className="comfort-kicker comfort-item-title">{activeItem.dateLabel} · {activeItem.title}</p>
@@ -744,23 +806,34 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
             ) : (
               <button
                 type="button"
-                className={`comfort-action ${activeItem.scene === 'blanket' ? `comfort-blanket-action comfort-progress-${progress}` : ''}`}
+                className={`comfort-action ${activeItem.scene === 'blanket' ? `comfort-blanket-action comfort-progress-${progress}` : ''} ${activeItem.scene === 'leaf' ? `comfort-leaf-action comfort-progress-${progress}` : ''}`}
                 onClick={() => {
                   if (activeItem.scene === 'blanket' && blanketDragMoved.current) {
                     blanketDragMoved.current = false;
                     return;
                   }
+                  if (activeItem.scene === 'blanket') setBlanketPull(Math.min(1, (progress + 1) / activeItem.taps));
+                  if (activeItem.scene === 'leaf' && leafDragMoved.current) {
+                    leafDragMoved.current = false;
+                    return;
+                  }
+                  if (activeItem.scene === 'leaf') setLeafPull(Math.min(1, (progress + 1) / activeItem.taps));
                   advanceItem();
                 }}
                 onPointerDown={event => {
-                  if (activeItem.scene !== 'blanket' || isComplete) return;
-                  blanketDragMoved.current = false;
-                  blanketDragStart.current = event.clientX;
+                  if (isComplete) return;
+                  if (activeItem.scene === 'blanket') {
+                    blanketDragMoved.current = false;
+                    blanketDragStart.current = event.clientX;
+                  } else if (activeItem.scene === 'leaf') {
+                    leafDragMoved.current = false;
+                    leafDragStart.current = event.clientX;
+                  } else return;
                   event.currentTarget.setPointerCapture(event.pointerId);
                 }}
-                onPointerMove={moveBlanket}
-                onPointerUp={endBlanketDrag}
-                onPointerCancel={endBlanketDrag}
+                onPointerMove={event => activeItem.scene === 'blanket' ? moveBlanket(event) : moveLeaf(event)}
+                onPointerUp={() => { endBlanketDrag(); endLeafDrag(); }}
+                onPointerCancel={() => { endBlanketDrag(); endLeafDrag(); }}
                 disabled={isComplete}
               >
                 {isComplete
@@ -771,10 +844,12 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
                       ? ['', 'otra vez!', 'sigue!', 'ya casi!', 'una más!'][progress]
                     : activeItem.scene === 'blanket'
                       ? <span className="comfort-blanket-action-label">{activeItem.actionText} <i aria-hidden="true">→</i></span>
+                      : activeItem.scene === 'leaf'
+                        ? <span className="comfort-leaf-action-label"><i aria-hidden="true">←</i> {activeItem.actionText}</span>
                       : activeItem.actionText}
               </button>
             )}
-            {!isComplete && activeItem.taps > 1 && !['snack', 'blanket'].includes(activeItem.scene) && <p className="comfort-progress">{progress} of {activeItem.taps} tiny steps</p>}
+            {!isComplete && activeItem.taps > 1 && !['snack', 'blanket', 'leaf'].includes(activeItem.scene) && <p className="comfort-progress">{progress} of {activeItem.taps} tiny steps</p>}
           </>
         ) : (
           <>

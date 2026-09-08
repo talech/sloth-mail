@@ -51,7 +51,7 @@ be lost when browser data is cleared.
 - Mouse reactions and replies.
 - Limited-date news and welcome-back moments.
 - Banff countdown and trip postcards.
-- A comfort kit with date-gated, replayable tactile arrivals that remain accessible after the final day, including a randomly selected single-snack delivery and a left-to-right blanket pull.
+- A comfort kit with date-gated, replayable tactile arrivals that remain accessible after the final day, including a randomly selected single-snack delivery, directional blanket and worry-leaf gestures, and a fully illuminated Way Home finale.
 - A subtle time-machine memory.
 
 This list describes the current product, not a commitment to preserve every
