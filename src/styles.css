@@ -137,6 +137,7 @@ button:disabled {
 .comfort-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: 0.55rem;
   padding: 0 0.8rem;
 }
@@ -160,12 +161,14 @@ button:disabled {
 
 .comfort-compartment.is-unlocked:hover { transform: translateY(-2px); box-shadow: 0 9px 20px rgb(190 24 93 / 10%); }
 .comfort-compartment.is-locked { border-style: solid; border-color: rgb(221 214 254); background: rgb(245 243 255 / 75%); color: rgb(148 163 184); }
-.comfort-compartment.is-opened { border-style: solid; border-color: rgb(196 181 253); background: linear-gradient(145deg, white, rgb(250 245 255)); }
-.comfort-compartment-number { position: absolute; top: 0.45rem; left: 0.55rem; color: rgb(244 114 182 / 70%); font-size: 0.57rem; font-weight: 900; }
+.comfort-compartment.is-opened { min-height: 10rem; padding: 0.48rem 0.38rem 0.58rem; border-style: solid; border-color: rgb(244 114 182 / 38%); background: linear-gradient(150deg, rgb(255 253 247), rgb(255 247 250) 56%, rgb(245 243 255)); box-shadow: none; }
+.comfort-compartment-number { position: absolute; z-index: 3; top: 0.45rem; left: 0.55rem; color: rgb(244 114 182 / 70%); font-size: 0.57rem; font-weight: 900; }
 .comfort-compartment-emoji { display: grid; height: 2.15rem; place-items: center; font-size: 1.8rem; }
-.comfort-compartment-emoji-memory { width: 6.5rem; height: 6.5rem; margin-bottom: 0.18rem; overflow: hidden; border: 2px solid rgb(251 207 232); border-radius: 50%; background: rgb(255 247 250); box-shadow: 0 6px 15px rgb(88 28 135 / 17%); }
-.comfort-compartment .comfort-compartment-memory { display: block; width: 100% !important; max-width: 100% !important; height: 100% !important; object-fit: cover; object-position: center 42%; border: 0; border-radius: 0; }
+.comfort-compartment-emoji-memory { position: relative; width: calc(100% - 0.2rem); height: 7.45rem; margin-bottom: 0.22rem; overflow: hidden; border: 0; border-radius: 0.9rem; background: radial-gradient(circle at 50% 46%, white 35%, rgb(253 242 248 / 45%) 100%); box-shadow: none; }
+.comfort-compartment-emoji-memory::after { display: none; }
+.comfort-compartment .comfort-compartment-memory { position: relative; z-index: 1; display: block; width: 100% !important; max-width: 100% !important; height: 100% !important; object-fit: contain; object-position: center; border: 0; border-radius: 0; mix-blend-mode: multiply; filter: saturate(1.04); transform: scale(1.08); }
 .comfort-compartment strong { font-size: 0.71rem; line-height: 1.1; }
+.comfort-compartment.is-opened strong { position: relative; z-index: 2; min-width: 76%; margin-top: -0.55rem; padding: 0.3rem 0.45rem; border: 0; background: linear-gradient(90deg, transparent, rgb(255 250 252 / 94%) 20%, rgb(255 250 252 / 94%) 80%, transparent); box-shadow: none; }
 .comfort-compartment small { color: rgb(148 163 184); font-size: 0.55rem; font-weight: 700; }
 .comfort-compartment.is-unlocked:not(.is-opened) { animation: comfort-waiting 2.5s ease-in-out infinite; }
 .comfort-footer { padding: 0.75rem 1rem 1rem; color: rgb(148 163 184); font-size: 0.61rem; font-weight: 800; }
@@ -321,12 +324,33 @@ button:disabled {
 .comfort-kiss-burst span:nth-child(6) { --kiss-x: -2rem; --kiss-y: 1.2rem; animation-delay: 140ms; }
 .comfort-kiss-burst b { position: absolute; top: -0.15rem; left: 50%; color: rgb(219 39 119); font-size: 0.82rem; font-weight: 1000; letter-spacing: 0.08em; opacity: 0; text-shadow: 0 2px white, 0 0 13px rgb(244 114 182 / 65%); animation: comfort-kiss-mwah 1.25s 520ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-.comfort-snack-box { position: absolute; z-index: 5; top: 8.2rem; left: 5.6rem; font-size: 2rem; transition: transform 260ms ease; }
-.comfort-scene-snack.comfort-progress-1 .comfort-snack-box { transform: translateX(0.55rem) rotate(5deg); animation: comfort-box-shake 320ms ease-in-out; }
-.comfort-scene-snack.comfort-progress-2 .comfort-snack-box { transform: translateX(1.1rem) rotate(-5deg); animation: comfort-box-shake 320ms ease-in-out; }
-.comfort-scene-snack.is-complete .comfort-snack-box { opacity: 0; transform: translateX(1.5rem) scale(1.7); }
-.comfort-treats { position: absolute; z-index: 6; top: 6rem; left: 5.4rem; width: 12rem; color: transparent; font-size: 1.45rem; letter-spacing: 0.25rem; opacity: 0; }
-.comfort-scene-snack.is-complete .comfort-treats { color: initial; animation: comfort-treat-explosion 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.comfort-snack-box { position: absolute; z-index: 6; top: 7.9rem; left: 5.45rem; font-size: 2.4rem; filter: drop-shadow(0 7px 8px rgb(88 28 135 / 18%)); transform-origin: center bottom; transition: opacity 180ms ease, transform 260ms ease; }
+.comfort-scene-snack.comfort-progress-1 .comfort-snack-box { transform: translateX(0.75rem) rotate(3deg); animation: comfort-box-scoot 420ms ease-in-out; }
+.comfort-scene-snack.comfort-progress-2 .comfort-snack-box { transform: translateX(1.55rem) rotate(-4deg) scale(1.03); animation: comfort-box-rattle-soft 460ms ease-in-out; }
+.comfort-scene-snack.comfort-progress-3 .comfort-snack-box { filter: drop-shadow(0 0 8px rgb(251 191 36 / 55%)); transform: translateX(2.45rem) rotate(5deg) scale(1.07); animation: comfort-box-rattle 500ms ease-in-out; }
+.comfort-scene-snack.comfort-progress-4 .comfort-snack-box { filter: drop-shadow(0 0 15px rgb(251 191 36 / 82%)); transform: translateX(3.45rem) rotate(-6deg) scale(1.13); animation: comfort-box-rattle 360ms ease-in-out infinite; }
+.comfort-scene-snack.is-complete .comfort-snack-box { opacity: 0; transform: translate(4.15rem, 0.3rem) rotate(12deg) scale(2.1); }
+.comfort-snack-leaks { position: absolute; z-index: 5; top: 7.15rem; left: 6.35rem; color: rgb(244 114 182); font-size: 0.72rem; font-weight: 900; letter-spacing: 0.48rem; opacity: 0; text-shadow: 0 0 8px rgb(251 191 36 / 70%); }
+.comfort-scene-snack.comfort-progress-3 .comfort-snack-leaks { margin-left: 2.45rem; animation: comfort-snack-leak 900ms ease-in-out infinite; }
+.comfort-scene-snack.comfort-progress-4 .comfort-snack-leaks { margin-left: 3.45rem; animation: comfort-snack-leak 620ms ease-in-out infinite; }
+.comfort-snack-prize { position: absolute; z-index: 8; top: 8.3rem; left: 6.15rem; font-size: 0.72rem; opacity: 0; filter: drop-shadow(0 8px 10px rgb(88 28 135 / 25%)); }
+.comfort-scene-snack.is-complete .comfort-snack-prize { animation: comfort-snack-delivery 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.comfort-scene-snack.is-complete .comfort-mouse { animation: comfort-snack-mouse-happy 1.25s 880ms ease-out; }
+.comfort-scene-snack.is-complete { animation: comfort-snack-flash 1.2s ease-out; }
+.comfort-snack-burst { position: absolute; z-index: 7; inset: 0; overflow: hidden; pointer-events: none; }
+.comfort-snack-burst span { position: absolute; top: 58%; left: 38%; color: rgb(236 72 153); font-size: calc(0.62rem + (var(--snack-burst-index) % 3) * 0.22rem); font-weight: 1000; opacity: 0; text-shadow: 0 0 8px white; animation: comfort-snack-confetti 1.25s cubic-bezier(0.16, 1, 0.3, 1) calc((var(--snack-burst-index) % 4) * 35ms) both; }
+.comfort-snack-burst span:nth-child(1) { --snack-x: -5.8rem; --snack-y: -4.2rem; --snack-r: -25deg; }
+.comfort-snack-burst span:nth-child(2) { --snack-x: -3.5rem; --snack-y: -6rem; --snack-r: 18deg; color: rgb(251 191 36); }
+.comfort-snack-burst span:nth-child(3) { --snack-x: -1.2rem; --snack-y: -5rem; --snack-r: 45deg; color: rgb(94 234 212); }
+.comfort-snack-burst span:nth-child(4) { --snack-x: 1rem; --snack-y: -6.5rem; --snack-r: -20deg; }
+.comfort-snack-burst span:nth-child(5) { --snack-x: 3.7rem; --snack-y: -5rem; --snack-r: 28deg; color: rgb(167 139 250); }
+.comfort-snack-burst span:nth-child(6) { --snack-x: 6.1rem; --snack-y: -3rem; --snack-r: -16deg; }
+.comfort-snack-burst span:nth-child(7) { --snack-x: 5rem; --snack-y: 1.6rem; --snack-r: 36deg; color: rgb(251 191 36); }
+.comfort-snack-burst span:nth-child(8) { --snack-x: 2.4rem; --snack-y: 2.6rem; --snack-r: -32deg; color: rgb(94 234 212); }
+.comfort-snack-burst span:nth-child(9) { --snack-x: -2.2rem; --snack-y: 2.2rem; --snack-r: 20deg; }
+.comfort-snack-burst span:nth-child(10) { --snack-x: -5.3rem; --snack-y: 0.5rem; --snack-r: -38deg; }
+.comfort-snack-glow { position: absolute; z-index: -1; top: 7.15rem; right: 3.15rem; width: 5.5rem; height: 4.8rem; border-radius: 50% 50% 45% 45%; background: radial-gradient(circle, rgb(253 230 138 / 85%), rgb(251 207 232 / 48%) 42%, transparent 72%); opacity: 0; transform: scale(0.25); animation: comfort-snack-prize-glow 1.4s 520ms ease-out forwards; }
+.comfort-snack-burst b { position: absolute; top: 3.6rem; left: 38%; color: rgb(219 39 119); font-size: 1.15rem; font-weight: 1000; letter-spacing: 0.1em; opacity: 0; text-shadow: 0 2px white, 0 0 16px rgb(251 191 36 / 75%); animation: comfort-snack-pum 1.05s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 .comfort-scene-blanket .comfort-string { top: 6.7rem; }
 .comfort-blanket { position: absolute; z-index: 5; left: 6rem; bottom: 1rem; width: 3rem; height: 4.4rem; border-radius: 1.1rem 1.1rem 0.7rem 0.7rem; background: linear-gradient(135deg, rgb(196 181 253), rgb(244 114 182)); box-shadow: inset 0 7px 14px rgb(255 255 255 / 30%), 0 7px 16px rgb(88 28 135 / 14%); transform-origin: left bottom; transition: width 450ms cubic-bezier(0.34, 1.56, 0.64, 1), height 450ms ease, left 450ms ease; }
@@ -366,8 +390,16 @@ button:disabled {
 @keyframes comfort-kiss-reaction { 0%, 100% { transform: rotate(-7deg); } 45% { transform: rotate(-7deg) scale(1.1); filter: drop-shadow(0 0 12px rgb(244 114 182)); } }
 @keyframes comfort-kiss-confetti { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); } 28% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(-50% + var(--kiss-x)), calc(-50% + var(--kiss-y))) scale(1.35) rotate(20deg); } }
 @keyframes comfort-kiss-mwah { 0% { opacity: 0; transform: translate(-50%, 1rem) scale(0.35) rotate(-8deg); } 30%, 70% { opacity: 1; transform: translate(-50%, 0) scale(1.18) rotate(4deg); } 100% { opacity: 0; transform: translate(-50%, -1rem) scale(0.9); } }
-@keyframes comfort-box-shake { 0%, 100% { margin-top: 0; } 25% { margin-top: -0.25rem; } 50% { margin-top: 0.15rem; } 75% { margin-top: -0.12rem; } }
-@keyframes comfort-treat-explosion { 0% { opacity: 0; transform: translate(0, 2rem) scale(0.2) rotate(-8deg); } 60% { opacity: 1; transform: translate(1.5rem, -1.8rem) scale(1.2) rotate(4deg); } 100% { opacity: 1; transform: translate(2rem, -1.1rem) scale(1); } }
+@keyframes comfort-box-scoot { 0%, 100% { margin-top: 0; } 38% { margin-top: -0.35rem; } 64% { margin-top: 0.12rem; } }
+@keyframes comfort-box-rattle-soft { 0%, 100% { margin: 0; } 30% { margin: -0.1rem 0 0 -0.08rem; } 60% { margin: 0.06rem 0 0 0.1rem; } }
+@keyframes comfort-box-rattle { 0%, 100% { margin: 0; } 20% { margin: -0.15rem 0 0 -0.18rem; } 40% { margin: 0.1rem 0 0 0.2rem; } 60% { margin: -0.25rem 0 0 -0.12rem; } 80% { margin: 0.08rem 0 0 0.16rem; } }
+@keyframes comfort-snack-leak { 0% { opacity: 0; transform: translateY(0.6rem) scale(0.6); } 38% { opacity: 1; } 100% { opacity: 0; transform: translateY(-1.4rem) scale(1.15); } }
+@keyframes comfort-snack-delivery { 0% { opacity: 0; transform: translate(0, 0.2rem) rotate(-10deg) scale(0.18); } 12% { opacity: 1; } 35% { opacity: 1; transform: translate(2.7rem, -3.6rem) rotate(8deg) scale(2.5); } 58% { opacity: 1; transform: translate(5.5rem, -4.8rem) rotate(-5deg) scale(4.8); } 76% { opacity: 1; transform: translate(7.85rem, -2.75rem) rotate(4deg) scale(3.7); } 88% { opacity: 1; transform: translate(7.45rem, -2.35rem) rotate(-2deg) scale(4.2); } 95% { opacity: 1; transform: translate(7.7rem, -2.55rem) rotate(1deg) scale(3.95); } 100% { opacity: 1; transform: translate(7.6rem, -2.5rem) rotate(0) scale(4); } }
+@keyframes comfort-snack-confetti { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.15) rotate(0); } 24% { opacity: 1; } 78% { opacity: 0.9; } 100% { opacity: 0; transform: translate(calc(-50% + var(--snack-x)), calc(-50% + var(--snack-y))) scale(1.35) rotate(var(--snack-r)); } }
+@keyframes comfort-snack-prize-glow { 0% { opacity: 0; transform: scale(0.25); } 40%, 75% { opacity: 0.88; transform: scale(1.18); } 100% { opacity: 0.55; transform: scale(1); } }
+@keyframes comfort-snack-pum { 0% { opacity: 0; transform: translate(-50%, 1.1rem) rotate(-8deg) scale(0.25); } 28%, 62% { opacity: 1; transform: translate(-50%, 0) rotate(4deg) scale(1.22); } 100% { opacity: 0; transform: translate(-50%, -1.5rem) rotate(-2deg) scale(0.86); } }
+@keyframes comfort-snack-mouse-happy { 0%, 100% { transform: rotate(-7deg); } 50% { transform: translateY(-0.45rem) rotate(-10deg) scale(1.13); filter: drop-shadow(0 0 13px rgb(251 191 36 / 80%)); } }
+@keyframes comfort-snack-flash { 0% { background-color: transparent; } 16% { background-color: rgb(254 249 195 / 82%); } 100% { background-color: transparent; } }
 @keyframes comfort-leaf-caught { 0% { filter: drop-shadow(0 0 2px rgb(74 222 128)); } 60% { filter: drop-shadow(0 0 16px rgb(74 222 128)); } 100% { filter: drop-shadow(0 0 7px rgb(74 222 128)); } }
 @keyframes time-machine-glimpse { 0% { opacity: 0; transform: translateY(4px); filter: blur(5px); } 20% { opacity: 0.72; transform: translateY(0); filter: blur(0); } 72% { opacity: 0.72; transform: translateY(0); filter: blur(0); } 100% { opacity: 0; transform: translateY(-2px); filter: blur(3px); } }
 
@@ -1094,13 +1126,19 @@ button:disabled {
   .comfort-hug-heart,
   .comfort-hug-sparkles,
   .comfort-kiss,
-  .comfort-treats,
+  .comfort-snack-prize,
+  .comfort-snack-leaks,
+  .comfort-snack-burst span,
+  .comfort-snack-burst b,
+  .comfort-snack-glow,
   .comfort-snack-box,
   .comfort-leaf {
     animation: none !important;
   }
 
-  .comfort-scene-snack.is-complete .comfort-treats { opacity: 1; transform: translate(2rem, -1.1rem) scale(1); }
+  .comfort-scene-snack.is-complete .comfort-snack-prize { opacity: 1; transform: translate(7.6rem, -2.5rem) scale(4); }
+  .comfort-scene-snack.is-complete .comfort-snack-glow { opacity: 0.55; transform: scale(1); }
+  .comfort-scene-snack.is-complete .comfort-snack-burst b { opacity: 1; transform: translateX(-50%); }
   .comfort-scene-kiss.is-complete .comfort-kiss { opacity: 1; transform: translate(9.35rem, -0.5rem) scale(2.5); }
   .comfort-scene-kiss.is-complete .comfort-kiss-burst b { opacity: 1; transform: translateX(-50%); }
   .comfort-scene-hug.is-active .comfort-hug-sparkles { opacity: 0.8; transform: translate(-42%, -1rem); }

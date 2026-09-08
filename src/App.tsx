@@ -27,7 +27,7 @@ type ComfortItem = {
 const comfortItems: ComfortItem[] = [
   { dateKey: '2026-09-06', dateLabel: 'Sep 6', emoji: '🫂', title: 'Pocket Hug', instruction: 'Press and hold until the cuddle arrives.', completeText: 'Hug delivered. The miles are still here, but so am I. 💜', actionText: 'press & hold for a hug', taps: 1, scene: 'hug' },
   { dateKey: '2026-09-07', dateLabel: 'Sep 7', emoji: '💋', title: 'Forehead Kiss', instruction: 'Tap three times quickly to send this tiny kiss flying to Mouse.', completeText: 'Mwah! It landed right above your tiny mouse eyebrows. 💕', actionText: 'tap quickly!', travelText: 'floating your way', taps: 3, scene: 'kiss' },
-  { dateKey: '2026-09-08', dateLabel: 'Sep 8', emoji: '📦', title: 'Emergency Snack', instruction: '', completeText: 'One restorative healthy and comfy treat, packed with love by your sloth.', actionText: 'tap', travelText: 'crossing the miles', taps: 3, scene: 'snack' },
+  { dateKey: '2026-09-08', dateLabel: 'Sep 8', emoji: '📦', title: 'Emergency Snack', instruction: '', completeText: 'Snacky escogido por el corazón de tu Puki', actionText: 'tap', travelText: 'crossing the miles', taps: 5, scene: 'snack' },
   { dateKey: '2026-09-09', dateLabel: 'Sep 9', emoji: '🧣', title: 'Traveling Blanket', instruction: 'Pull the blanket across the invisible string, one cozy tug at a time.', completeText: 'Mouse is tucked in. The blanket smells faintly like home and sloth cuddles.', actionText: 'pull the blanket', travelText: 'taking the cozy route', taps: 3, scene: 'blanket' },
   { dateKey: '2026-09-10', dateLabel: 'Sep 10', emoji: '🍃', title: 'The Worry Leaf', instruction: 'Place one heavy little thought on the leaf, then help it float to Sloth.', completeText: 'Sloth caught it. You do not have to carry that thought alone anymore.', actionText: 'send the worry leaf', travelText: 'almost in your paws', taps: 3, scene: 'leaf' },
   { dateKey: '2026-09-11', dateLabel: 'Sep 11', emoji: '🏡', title: 'The Way Home', instruction: 'Light the string, one little star at a time.', completeText: 'Every tiny light leads back to us. Come home when you’re ready, Mouse. ✨', actionText: 'light the next star', travelText: 'viajando con amor', taps: 4, scene: 'home' },
@@ -41,6 +41,21 @@ const hugHeartColors = [
   { color: '#f59e9e', glow: 'rgb(251 146 160 / 48%)' },
   { color: '#5eead4', glow: 'rgb(45 212 191 / 42%)' },
 ] as const;
+
+const snackOptions = [
+  { emoji: '🍪', name: 'a cozy little cookie' },
+  { emoji: '🥛', name: 'a sleepy glass of milk' },
+  { emoji: '🍎', name: 'a crunchy little apple' },
+  { emoji: '🧃', name: 'an emergency juice box' },
+  { emoji: '☕', name: 'a warm tiny cafecito' },
+] as const;
+
+type SnackOption = (typeof snackOptions)[number];
+
+const pickAnotherSnack = (currentEmoji: string) => {
+  const choices = snackOptions.filter(option => option.emoji !== currentEmoji);
+  return choices[Math.floor(Math.random() * choices.length)];
+};
 
 type HugHeartColor = (typeof hugHeartColors)[number];
 
@@ -538,6 +553,7 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
   const [isHolding, setIsHolding] = useState(false);
   const [holdMessageStep, setHoldMessageStep] = useState(0);
   const [hugHeartColor, setHugHeartColor] = useState<HugHeartColor>(hugHeartColors[0]);
+  const [snack, setSnack] = useState<SnackOption>(snackOptions[0]);
   const [now, setNow] = useState(Date.now);
   const unlockedCount = comfortItems.filter(item => item.dateKey <= today).length;
 
@@ -581,6 +597,7 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
     if (activeItem && progress >= activeItem.taps && cooldownRemaining === 0) {
       setProgress(0);
       setIsHolding(false);
+      if (activeItem.scene === 'snack') setSnack(current => pickAnotherSnack(current.emoji));
     }
   }, [activeItem, cooldownRemaining, progress]);
 
@@ -591,6 +608,9 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
     setNow(Date.now());
     setProgress(stillRegenerating ? item.taps : 0);
     setIsHolding(false);
+    if (item.scene === 'snack' && !stillRegenerating) {
+      setSnack(current => pickAnotherSnack(current.emoji));
+    }
   };
 
   const finishItem = (item: ComfortItem) => {
@@ -649,7 +669,22 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
                   <b>MUAAAA!</b>
                 </div>
               )}
-              {activeItem.scene === 'snack' && <><span className="comfort-snack-box" aria-hidden="true">📦</span><span className="comfort-treats" aria-hidden="true">🍪 🥛 🍎 🧃 ☕</span></>}
+              {activeItem.scene === 'snack' && (
+                <>
+                  <span className="comfort-snack-box" aria-hidden="true">📦</span>
+                  <span className="comfort-snack-leaks" aria-hidden="true">♥ ✦ ♥</span>
+                  <span className="comfort-snack-prize" aria-hidden="true">{snack.emoji}</span>
+                  {isComplete && (
+                    <div className="comfort-snack-burst" aria-hidden="true">
+                      {['♥', '✦', '●', '♡', '✧', '♥', '●', '✦', '♡', '♥'].map((symbol, index) => (
+                        <span key={index} style={{ '--snack-burst-index': index } as React.CSSProperties}>{symbol}</span>
+                      ))}
+                      <i className="comfort-snack-glow" />
+                      <b>¡PUM!</b>
+                    </div>
+                  )}
+                </>
+              )}
               {activeItem.scene === 'blanket' && <span className="comfort-blanket" aria-hidden="true" />}
               {activeItem.scene === 'leaf' && <><span className="comfort-thought" aria-hidden="true">one heavy thought</span><span className="comfort-leaf" aria-hidden="true">🍃</span></>}
               {activeItem.scene === 'home' && <span className="comfort-home" aria-hidden="true">🏡</span>}
@@ -657,7 +692,13 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
             <div className="comfort-copy">
               <p className="comfort-kicker">{activeItem.dateLabel} · just for Mouse</p>
               <h1 id="comfort-title">{activeItem.title}</h1>
-              {(isComplete || activeItem.instruction) && <p className={isComplete ? 'comfort-complete-text' : ''}>{isComplete ? activeItem.completeText : activeItem.instruction}</p>}
+              {(isComplete || activeItem.instruction) && (
+                <p className={isComplete ? 'comfort-complete-text' : ''}>
+                  {isComplete && activeItem.scene === 'snack'
+                    ? <>{activeItem.completeText}: <strong>{snack.name} {snack.emoji}</strong></>
+                    : isComplete ? activeItem.completeText : activeItem.instruction}
+                </p>
+              )}
             </div>
             {activeItem.scene === 'hug' ? (
               <button
@@ -687,6 +728,8 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
                   ? `regenerating in ${Math.ceil(cooldownRemaining / 1000)}s`
                   : activeItem.scene === 'kiss' && progress > 0
                     ? progress === 1 ? 'again!' : 'one more!'
+                    : activeItem.scene === 'snack' && progress > 0
+                      ? ['', 'otra vez!', 'sigue!', 'ya casi!', 'una más!'][progress]
                     : activeItem.actionText}
               </button>
             )}
@@ -707,12 +750,16 @@ function ComfortKit({ today, onClose }: { today: string; onClose: () => void }) 
                 return (
                   <button key={item.dateKey} type="button" className={`comfort-compartment ${unlocked ? 'is-unlocked' : 'is-locked'} ${opened ? 'is-opened' : ''}`} onClick={() => openItem(item)} disabled={!unlocked}>
                     <span className="comfort-compartment-number">{index + 1}</span>
-                    <span className={`comfort-compartment-emoji ${['hug', 'kiss'].includes(item.scene) && opened ? 'comfort-compartment-emoji-memory' : ''}`}>
+                    <span className={`comfort-compartment-emoji ${['hug', 'kiss', 'snack', 'blanket'].includes(item.scene) && opened ? 'comfort-compartment-emoji-memory' : ''}`}>
                       {unlocked ? (
                         opened && item.scene === 'hug'
                           ? <img className="comfort-compartment-memory" src="./limited/pocket-hug-open.png" alt="Sloth hugging Mouse" />
                           : opened && item.scene === 'kiss'
                             ? <img className="comfort-compartment-memory" src="./limited/forehead-kiss-open.png" alt="Sloth giving Mouse a forehead kiss" />
+                            : opened && item.scene === 'snack'
+                              ? <img className="comfort-compartment-memory" src="./limited/emergency-snack-open.png" alt="Sloth lovingly delivering Mouse an emergency snack" />
+                              : opened && item.scene === 'blanket'
+                                ? <img className="comfort-compartment-memory" src="./limited/traveling-blanket-open.png" alt="Sloth tucking Mouse into a cozy traveling blanket" />
                             : item.emoji
                       ) : <LockKeyhole size={19} />}
                     </span>
