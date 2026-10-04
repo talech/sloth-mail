@@ -40,6 +40,14 @@ rules, and animation keyframes. The more bespoke experiences—postcards,
 welcome overlays, mouse reactions, and comfort-kit scenes—are primarily styled
 through named CSS classes.
 
+The Open When experience is a small self-contained exception to the root
+component: `src/OpenWhen.tsx` owns its interaction and persistence, while its
+editable catalog lives in `src/content/openWhenLetters.ts`.
+Catalog entries can include optional artwork paths and alternative text. The
+component displays uncropped note artwork, lazy-loaded collection thumbnails,
+and simple authored emphasis without injecting HTML. Artwork and new catalog
+entries do not change the persisted save shape or existing content IDs.
+
 `public/` contains assets copied directly into the build. Source code uses
 relative asset URLs because `vite.config.ts` sets `base` to `./`.
 
@@ -48,7 +56,9 @@ relative asset URLs because `vite.config.ts` sets `base` to `./`.
 All durable state is stored in `window.localStorage`. The main save tracks the
 star balance and rate, maximum stars, unlocked journal message IDs, the most
 recent daily claim, and the last-opened timestamp. Separate keys track one-time
-notices, postcard views, and comfort-kit progress.
+notices, postcard views, comfort-kit progress, and Open When discoveries,
+favorites, and the current local day's discovery count. Older Open When saves
+without daily-limit fields continue loading with zero discoveries for the day.
 
 Loaders defensively parse stored JSON and supply defaults. Any storage schema
 change should continue accepting the previous shape or deliberately migrate it.

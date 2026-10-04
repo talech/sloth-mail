@@ -52,6 +52,8 @@ be lost when browser data is cleared.
 - Limited-date news and welcome-back moments.
 - Banff countdown and trip postcards.
 - A comfort kit with date-gated, replayable tactile arrivals that remain accessible after the final day, including a randomly selected single-snack delivery, directional blanket and worry-leaf gestures, and a fully illuminated Way Home finale.
+- A “post-its from Sloth” experience inspired by the couple's real ritual. Mouse can discover two new post-its per local day, reread found post-its freely, and make favorites “super sticky” for quick access.
+  Illustrated notes pair the original artwork with readable messages; the collection shows small artwork previews. The “Remind me I’m loved” set includes personal declarations, tiny memories, and playful official notices.
 - A subtle time-machine memory.
 
 This list describes the current product, not a commitment to preserve every

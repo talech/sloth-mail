@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Star, BookOpen, Gift, ChevronDown, ChevronLeft, ChevronRight, Mountain, Heart, LockKeyhole, X } from 'lucide-react';
+import { Star, BookOpen, Gift, ChevronDown, ChevronLeft, ChevronRight, HeartHandshake, Luggage, Mountain, LockKeyhole, X } from 'lucide-react';
+import OpenWhen from './OpenWhen';
 
 const SAVE_KEY = 'slothmail-save-v1';
 const LIMITED_NEWS_KEY = 'slothmail-limited-news-flash-seen-v1';
@@ -930,6 +931,9 @@ export default function App() {
     return postcard ? localStorage.getItem(`${BANFF_SEEN_KEY_PREFIX}${postcard.dateKey}`) === 'true' : true;
   });
   const [showComfortKit, setShowComfortKit] = useState(false);
+  const [showOpenWhen, setShowOpenWhen] = useState(() => (
+    import.meta.env.DEV && new URLSearchParams(window.location.search).get('openWhenPreview') === '1'
+  ));
   const [showTimeMachine, setShowTimeMachine] = useState(false);
   const [showComfortWelcome, setShowComfortWelcome] = useState(() => (
     (import.meta.env.DEV && new URLSearchParams(window.location.search).get('comfortWelcome') === '1')
@@ -1063,6 +1067,16 @@ export default function App() {
         </div>
       )}
       {showComfortKit && <ComfortKit today={comfortDateKey} onClose={() => setShowComfortKit(false)} />}
+      {showOpenWhen && (
+        <div className="open-when-backdrop" role="presentation">
+          <div className="open-when-modal" role="dialog" aria-modal="true" aria-label="Post-its from Sloth">
+            <button type="button" className="open-when-close" onClick={() => setShowOpenWhen(false)} aria-label="Close post-its">
+              <X size={17} />
+            </button>
+            <OpenWhen />
+          </div>
+        </div>
+      )}
       {showWelcomeBack && (
         <div className="welcome-back-backdrop" role="presentation">
           <section
@@ -1205,9 +1219,12 @@ export default function App() {
               <span>{Math.floor(stars)}/{maxStars}</span>
             </div>
             <div className="flex gap-1">
+                <button type="button" onClick={() => setShowOpenWhen(true)} className="open-when-nav-button" aria-label="Open post-its from Sloth">
+                  <HeartHandshake size={18} />
+                </button>
                 {comfortKitAvailable && (
                   <button type="button" onClick={openComfortKit} className="comfort-nav-button" aria-label="Open In Case You Need Me care package">
-                    <Heart size={18} className="fill-current" />
+                    <Luggage size={18} />
                     {hasNewComfort && <span className="comfort-notification" aria-hidden="true" />}
                   </button>
                 )}
