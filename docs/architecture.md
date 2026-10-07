@@ -43,6 +43,7 @@ through named CSS classes.
 The Open When experience is a small self-contained exception to the root
 component: `src/OpenWhen.tsx` owns its interaction and persistence, while its
 editable catalog lives in `src/content/openWhenLetters.ts`.
+`src/content/notePlacements.ts` records the explicit pile IDs and stable numeric library IDs (1001–1072). `src/postItProgress.ts` loads the unchanged post-it save; `src/NoteText.tsx` safely renders authored emphasis in both experiences.
 Catalog entries can include optional artwork paths and alternative text. The
 component displays uncropped note artwork, lazy-loaded collection thumbnails,
 and simple authored emphasis without injecting HTML. Artwork and new catalog
@@ -57,8 +58,9 @@ All durable state is stored in `window.localStorage`. The main save tracks the
 star balance and rate, maximum stars, unlocked journal message IDs, the most
 recent daily claim, and the last-opened timestamp. Separate keys track one-time
 notices, postcard views, comfort-kit progress, and Open When discoveries,
-favorites, and the current local day's discovery count. Older Open When saves
-without daily-limit fields continue loading with zero discoveries for the day.
+favorites, and the current local day's discovery count. Legacy daily-limit fields remain readable but no longer limit discovery. An optional `stickySlots` array records three stable note IDs and each first-read timestamp (`null` for unread). Read slots refresh after eight elapsed hours; unread slots remain. Refresh runs on load, window focus, and every 15 seconds while the pile is mounted. Rereading does not restart timers. Selection guarantees exactly one illustrated slot, using known artwork when unseen illustrations run out. Older Open When saves without these fields still load.
+
+On app initialization, discovered or favorited library-transfer IDs are unioned into the existing journal. The ordinary save effect persists that union, making repeat loads idempotent and leaving balances unchanged. The original post-it save is retained for pins and keepsakes, including retired notes. The two retired entries stay in the source archive but are excluded from both active catalogs. See [the migration decision](decisions/post-it-pile-migration.md).
 
 Loaders defensively parse stored JSON and supply defaults. Any storage schema
 change should continue accepting the previous shape or deliberately migrate it.

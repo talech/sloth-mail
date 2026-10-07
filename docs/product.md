@@ -52,8 +52,9 @@ be lost when browser data is cleared.
 - Limited-date news and welcome-back moments.
 - Banff countdown and trip postcards.
 - A comfort kit with date-gated, replayable tactile arrivals that remain accessible after the final day, including a randomly selected single-snack delivery, directional blanket and worry-leaf gestures, and a fully illuminated Way Home finale.
-- A “post-its from Sloth” experience inspired by the couple's real ritual. Mouse can discover two new post-its per local day, reread found post-its freely, and make favorites “super sticky” for quick access.
-  Illustrated notes pair the original artwork with readable messages; the collection shows small artwork previews. The “Remind me I’m loved” set includes personal declarations, tiny memories, and playful official notices.
+- A “post-its from Sloth” pile of three persistent overlapping scraps, each labeled read or unread. Read scraps are replaced eight hours after their first reading; unread scraps stay in place. A countdown shows the next arrival, and every pile includes exactly one illustrated note and two text notes (a familiar drawing once unseen artwork runs out). Mouse encounters personal scraps, playful paper artifacts, and illustrated keepsakes, then rereads finds and pins favorites in “My kept notes,” where the remaining-surprises count appears below the heading. All 25 illustrated notes belong to the 77-note pile. Unread drawing previews are blurred; read drawings are clear; the pile uses the app’s existing font.
+- A 152-message main collection: 49 Soft, 31 Silly, 32 Boost, and 40 Love messages. The 72 transferred post-its preserve their paragraphs, closings, and authored emphasis. Previously found transfers unlock automatically, and collected messages can be opened again without paying stars.
+- Old post-it finds and favorites remain accessible, including notes transferred to the library and the two notes retired from future discovery.
 - A subtle time-machine memory.
 
 This list describes the current product, not a commitment to preserve every

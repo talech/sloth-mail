@@ -62,19 +62,15 @@ http://localhost:5173/?openWhenPreview=1
 ```
 
 The development-only parameter opens the complete post-it collection immediately.
-Select any title to inspect the finished post-it, then use “back” to return to
-the main need picker. Preview mode bypasses the daily
-discovery limit and intentionally reveals the full catalog; visitors only see
-post-its they have discovered.
+Select any title to inspect the finished post-it, then use “back to kept notes” to return. Preview mode reveals the complete source archive, including library transfers and retired notes, without recording discoveries. Visitors only see their own finds in kept notes.
 
-## Discovery rhythm
+## Discovery and placement
 
-Mouse can discover up to two new post-its per local calendar day. Opening a
-previously discovered post-it does not use one of those discoveries. “Make
-super sticky” adds or removes a discovered post-it from the super-sticky
-section at the top of the collection. This progress uses the existing
-`slothmail-open-when-v1` key
-and continues accepting the original save shape.
+Mouse sees three scraps at a time, can read the three persistent scraps, and can reread every find in “My kept notes.” Opening a scrap saves it; “Make super sticky” pins it. Existing discoveries and pins use the unchanged `slothmail-open-when-v1` key. Read stickies stay visible and refresh individually eight hours after first reading. Unread stickies do not expire. The pile always includes exactly one artwork note and two text notes, with familiar artwork reused after unseen illustrated notes run out. Found notes and pins can be reread freely; rereading does not restart the clock. The remaining-surprises count includes only unseen pile notes.
+
+The catalog is also the source archive for transferred and retired notes. Placement is explicit in `src/content/notePlacements.ts`: 77 pile IDs and 72 stable numeric library mappings. All illustrated notes belong in the pile. Never change a published library mapping or original note ID. New entries need an explicit placement; adding to the archive alone does not expose them for discovery. The two retired notes remain readable only if previously found or pinned.
+
+Library transfers join Soft, Silly, Boost, or Love at their existing star prices. Previously discovered transfers unlock without charge. The [content review](post-it-content-review.md) records each placement.
 
 ## Writing guardrails
 

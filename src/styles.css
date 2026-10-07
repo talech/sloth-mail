@@ -1379,3 +1379,42 @@ button:disabled {
     animation: none;
   }
 }
+
+/* Three persistent stickies, with read/unread states and eight-hour arrivals. */
+.post-it-pile { background: #fff9f2; }
+.pile-heading { padding: 2.7rem 1.4rem 0; }
+.pile-kicker { color: #826788; font-size: .72rem; }
+.pile-heading h1 { margin: .65rem 0 .3rem; color: #49394f; font-family: inherit; font-size: 1.6rem; font-weight: 500; line-height: 1.2; }
+.pile-heading p { color: #695b6b; font-size: .82rem; }
+.pile-scraps { position: relative; height: 20rem; margin: .7rem 1.3rem 0; }
+.pile-scrap { position: absolute; display: flex; flex-direction: column; gap: .6rem; width: 61%; height: 11rem; padding: 1rem; border: 0; background: #fff0b9; color: #49394f; text-align: left; box-shadow: 2px 6px 12px #49394f24; transition: transform 200ms ease, box-shadow 200ms ease; }
+.pile-scrap.scrap-0 { left: 1%; top: 1rem; transform: rotate(-9deg); background: #dcebf1; }
+.pile-scrap.scrap-1 { right: 0; top: 4rem; transform: rotate(8deg); background: #f6d9e5; }
+.pile-scrap.scrap-2 { left: 12%; top: 9rem; transform: rotate(-3deg); }
+.pile-scrap:hover, .pile-scrap:focus-visible { z-index: 3; transform: translateY(-.35rem) rotate(0deg); box-shadow: 2px 9px 18px #49394f30; }
+.scrap-kicker { font-size: .68rem; letter-spacing: .03em; }
+.scrap-title { font-family: inherit; font-size: 1.15rem; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.pile-scrap img { width: 100%; height: 7rem; object-fit: contain; filter: blur(7px); }
+.scrap-peel { position: absolute; right: 0; bottom: 0; display: grid; place-items: center; width: 1.7rem; height: 1.7rem; background: #fff9f2; color: #826788; border-radius: 1rem 0 0; }
+.pile-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem; padding: .7rem 1.2rem 1rem; border-top: 1px dashed #e8dbd5; font-size: .7rem; color: #695b6b; }
+.pile-footer button { min-height: 44px; color: #755b83; text-decoration: underline; text-underline-offset: .2rem; }
+.post-it-pile .post-it-sheet { background: #fff0b9; border-color: #e7d498; }
+.post-it-pile .open-letter { padding-top: 3.5rem; }
+.post-it-pile .open-letter-back, .post-it-pile .open-when-library-heading button { min-height: 44px; font-size: .75rem; }
+.post-it-pile .open-letter-copy { font-size: .9rem; line-height: 1.5; color: #49394f; }
+.post-it-pile .open-letter-closing { font-size: .85rem; color: #755b83; }
+.post-it-pile .open-letter-actions button { min-height: 44px; font-size: .75rem; }
+.pile-save-status { margin: .6rem 0 0; text-align: center; color: #755b83; font-size: .73rem; }
+.post-it-pile .open-when-library { max-height: none; padding-top: 2.7rem; }
+.post-it-pile .open-when-groups section > div { grid-template-columns: 1fr; }
+.post-it-pile .open-when-groups button { min-height: 44px; font-size: .8rem; }
+.post-it-pile .open-when-groups h3, .post-it-pile .open-when-library-intro { font-size: .8rem; }
+.pile-finished { padding: 3rem 1.5rem; text-align: center; font-size: .9rem; color: #695b6b; }
+.pile-finished > span { font-size: 2rem; }
+@media (prefers-reduced-motion: reduce) { .pile-scrap { transition: none; } }
+
+.pile-anticipation { padding: 0 1.3rem .8rem; color: #755b83; text-align: center; font-size: .78rem; }
+
+.scrap-state { position: absolute; bottom: .6rem; left: .8rem; font-size: .65rem; color: #695b6b; }
+.pile-scrap.is-read img { filter: none; }
+.pile-arrival { padding: 0 1.2rem .8rem; color: #755b83; text-align: center; font-size: .75rem; }

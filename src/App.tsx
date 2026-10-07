@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Star, BookOpen, Gift, ChevronDown, ChevronLeft, ChevronRight, HeartHandshake, Luggage, Mountain, LockKeyhole, X } from 'lucide-react';
 import OpenWhen from './OpenWhen';
+import { libraryNotePlacements, transferredMessages } from './content/notePlacements';
+import { loadOpenWhenSave } from './postItProgress';
+import { NoteText } from './NoteText';
 
 const SAVE_KEY = 'slothmail-save-v1';
 const LIMITED_NEWS_KEY = 'slothmail-limited-news-flash-seen-v1';
@@ -250,6 +253,7 @@ const farAwayDailyBank = [
 ];
 
 const messageBank = [
+  ...transferredMessages,
   { id: 1, tone: "soft", title: "little nest", text: "The sloth council recommends building the smallest possible cozy nest today and hiding inside it without shame. Blankets count as medicine. 🛌🦥", tag: "soft", cost: 30 },
   { id: 2, tone: "soft", title: "foggy paws", text: "Even foggy little mice deserve tenderness. Especially foggy little mice. 🌫️🐭", tag: "soft", cost: 30 },
   { id: 3, tone: "soft", title: "gentle mode", text: "Your system is allowed to run in gentle mode today. No sprinting. No proving. Just soft tiny existence. 🧡🩵", tag: "soft", cost: 30 },
@@ -910,7 +914,13 @@ export default function App() {
   const [mouseReactionId, setMouseReactionId] = useState(0);
   const [mouseReply, setMouseReply] = useState<string | null>(null);
   const [showSloth, setShowSloth] = useState(false);
-  const [journal, setJournal] = useState<Message[]>(() => messageBank.filter(message => save.journalIds.includes(message.id)));
+  const [journal, setJournal] = useState<Message[]>(() => {
+    const oldNotes = loadOpenWhenSave();
+    const importedIds = new Set<number>(libraryNotePlacements
+      .filter(placement => oldNotes.opened.includes(placement.noteId) || oldNotes.favorites.includes(placement.noteId))
+      .map(placement => placement.id));
+    return messageBank.filter(message => save.journalIds.includes(message.id) || importedIds.has(message.id));
+  });
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(collectionCategories.map(category => [category.id, false]))
   );
@@ -934,6 +944,28 @@ export default function App() {
   const [showOpenWhen, setShowOpenWhen] = useState(() => (
     import.meta.env.DEV && new URLSearchParams(window.location.search).get('openWhenPreview') === '1'
   ));
+  useEffect(() => {
+    if (!showOpenWhen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const dialog = document.querySelector<HTMLElement>('.open-when-modal');
+    dialog?.querySelector<HTMLButtonElement>('button')?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setShowOpenWhen(false); return; }
+      if (event.key !== 'Tab' || !dialog) return;
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea'))
+        .filter(element => element.getClientRects().length > 0 && !element.hasAttribute('disabled'));
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !controls.includes(document.activeElement as HTMLElement))) {
+        event.preventDefault(); last?.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !controls.includes(document.activeElement as HTMLElement))) {
+        event.preventDefault(); first?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); previous?.focus(); };
+  }, [showOpenWhen]);
+
   const [showTimeMachine, setShowTimeMachine] = useState(false);
   const [showComfortWelcome, setShowComfortWelcome] = useState(() => (
     (import.meta.env.DEV && new URLSearchParams(window.location.search).get('comfortWelcome') === '1')
@@ -1294,7 +1326,7 @@ export default function App() {
                   <div className="envelope-seal" aria-hidden="true">💌</div>
                   <div className="message-copy">
                     <p className="text-[10px] font-bold text-rose-400 uppercase">{activeMessage.tag}</p>
-                    <p className="text-xs italic leading-snug">{activeMessage.text}</p>
+                    <div className="text-xs leading-snug space-y-2">{activeMessage.text.split(/\n\n/).map((paragraph, index) => <p key={index}><NoteText text={paragraph} /></p>)}</div>
                   </div>
                 </>
               ) : (
@@ -1366,15 +1398,17 @@ export default function App() {
                             const isCollected = journal.some(saved => saved.id === message.id);
 
                             return isCollected ? (
-                              <div
+                              <button
+                                type="button"
                                 key={message.id}
-                                className="w-full rounded-lg border border-slate-200 bg-white p-2 text-left font-bold text-slate-700"
+                                onClick={() => { revealMessage(message); setView('main'); }}
+                                className="w-full rounded-lg border border-slate-200 bg-white p-2 text-left font-bold text-slate-700 hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-purple-400"
                               >
                                 {message.title}
-                              </div>
+                              </button>
                             ) : (
                               <div key={message.id} className="rounded-lg border border-slate-200 bg-slate-100 p-2 font-bold text-slate-400 opacity-70">
-                                {lockedHints[category.id][categoryMessages.indexOf(message)]}
+                                {lockedHints[category.id][categoryMessages.filter(item => item.id < 1000).indexOf(message)] ?? 'A little something from Sloth…'}
                               </div>
                             );
                           })}
