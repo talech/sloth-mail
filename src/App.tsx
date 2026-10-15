@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Star, BookOpen, Gift, ChevronDown, ChevronLeft, ChevronRight, HeartHandshake, Luggage, Mountain, LockKeyhole, X } from 'lucide-react';
 import OpenWhen from './OpenWhen';
+import SlothPeek, { isPeekSeason } from './SlothPeek';
 import { libraryNotePlacements, transferredMessages } from './content/notePlacements';
 import { loadOpenWhenSave } from './postItProgress';
 import { NoteText } from './NoteText';
@@ -927,7 +928,7 @@ export default function App() {
   const [view, setView] = useState('main');
   const [lastDailyClaim, setLastDailyClaim] = useState<string | null>(save.lastDailyClaim);
   const [limitedNews, setLimitedNews] = useState(getLimitedNews);
-  const [showWelcomeBack, setShowWelcomeBack] = useState(() => isWelcomeBackPreview() || shouldShowWelcomeBack(save.lastOpenedAt));
+  const [showWelcomeBack, setShowWelcomeBack] = useState(() => !isPeekSeason() && (isWelcomeBackPreview() || shouldShowWelcomeBack(save.lastOpenedAt)));
   const [showUpdateBanner, setShowUpdateBanner] = useState(shouldShowUpdateBanner);
   const [banffCollection] = useState(getBanffCollection);
   const [banffPostcardIndex, setBanffPostcardIndex] = useState(() => Math.max(getBanffCollection().length - 1, 0));
@@ -1109,6 +1110,7 @@ export default function App() {
           </div>
         </div>
       )}
+      <SlothPeek />
       {showWelcomeBack && (
         <div className="welcome-back-backdrop" role="presentation">
           <section

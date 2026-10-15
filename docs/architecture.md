@@ -106,3 +106,37 @@ Add a short record under `docs/decisions/` when a change introduces a backend,
 changes persistence semantics, replaces the deployment target, adds a major
 dependency or state-management system, or otherwise creates a constraint future
 contributors need to understand.
+
+## Temporary sloth peekaboo
+
+`src/SlothPeek.tsx` replaces the ordinary welcome-back dialog from October 15
+through October 24, 2026 (local dates). It preloads and decodes the first and final original images. The first frame's
+paws and ledge remain fixed in a canvas layer (paper pixels become transparent,
+painted paws stay opaque) while the final frame's head rises behind them,
+clipped to exclude its original paws and to hide below the ledge. A compositor
+transform provides one continuous 2.4-second eased rise rather than swapping
+or crossfading the six drawings. Original intermediate images remain untouched.
+The centered welcome-style modal waits on the first pose until a tap anywhere
+on the overlay (or keyboard activation of the invisible play control).
+Taps during the rise or descent do not interrupt motion. Once up, tapping Sloth
+sends a 16-heart purple burst; the next tap lowers her over 1.5 seconds. Tapping
+her paws brings her up again and repeats that interaction loop. Hearts clear
+after 1.8 seconds or when lowering/closing. The close button appears after the
+first completed rise and remains available throughout subsequent loops,
+including motion. There is no automatic, Escape, or backdrop dismissal. The
+backdrop only starts a rise from the initial/down state. Keyboard focus cycles
+through the current play/heart/lower control and close button, returns to its
+previous owner after closing, and background scrolling stays locked. Reduced
+motion uses immediate up/down changes and a stationary purple-heart cluster.
+Failed artwork loading
+silently skips the appearance. The additive `slothmail-peek-last-shown-v1` key
+stores an epoch-millisecond timestamp; existing saves and last-opened behavior
+are unchanged. Eligibility is checked on load, focus, visibility changes, and
+every 15 seconds, with a 30-minute interval between appearances. Outside the
+window, the existing eight-hour welcome-back behavior applies.
+
+Development-only `?peek=1` forces one appearance within the window;
+`?peekDate=2026-10-15` overrides its date. Combine them to preview, and check
+October 14, 15, 24, and 25 for the window boundaries. `&peekMotion=1` previews the animated sequence even when the browser requests
+reduced motion. All three overrides are development-only and do not affect
+production builds.

@@ -1418,3 +1418,104 @@ button:disabled {
 .scrap-state { position: absolute; bottom: .6rem; left: .8rem; font-size: .65rem; color: #695b6b; }
 .pile-scrap.is-read img { filter: none; }
 .pile-arrival { padding: 0 1.2rem .8rem; color: #755b83; text-align: center; font-size: .75rem; }
+
+/* Original artwork is registered to one fixed ledge and a consistent paw span. */
+.sloth-peek-modal {
+  width: min(100%, 26rem);
+  background: white;
+  outline: none;
+}
+.sloth-peek {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1536 / 1100;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sloth-peek-head-window {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 83.636%;
+  overflow: hidden;
+}
+.sloth-peek img, .sloth-peek canvas { position: absolute; max-width: none; height: auto; }
+.sloth-peek-head {
+  left: 50%;
+  top: 12.554%;
+  width: 95.2%;
+  /* Trace the head above the original paws so those never travel upward. */
+  clip-path: polygon(0 0, 100% 0, 100% 68.36%, 84% 68.36%,
+    78.8% 70.7%, 74.9% 73.24%, 72.27% 77.15%, 70.96% 82.52%,
+    28.97% 82.52%, 28% 79.1%, 27% 76.66%, 24.74% 74.22%,
+    22.14% 72.27%, 17.58% 70.7%, 0 68.36%);
+  transform: translate(-50%, 100%);
+  transition: transform 2400ms cubic-bezier(.22, .65, .28, 1);
+  will-change: transform;
+}
+.sloth-peek.is-revealed .sloth-peek-head { transform: translate(-50%, 0); }
+.sloth-peek-paws {
+  left: 50%;
+  top: 31.2%;
+  width: 88.2%;
+  transform: translateX(-50%);
+}
+.sloth-peek-play {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.sloth-peek-play:focus-visible { outline: 3px solid #c084fc; outline-offset: -5px; }
+.sloth-peek-close {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #faf5ff;
+  color: #755b83;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.sloth-peek-close:hover { background: #f3e8ff; }
+.sloth-peek-close:focus-visible { outline: 3px solid #c084fc; outline-offset: 2px; }
+.sloth-peek-reduced .sloth-peek-head { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .sloth-peek-backdrop, .sloth-peek-modal { animation: none; }
+}
+
+.sloth-peek.is-lowering .sloth-peek-head {
+  transition-duration: 1500ms;
+  transition-timing-function: cubic-bezier(.45, 0, .55, 1);
+}
+.sloth-peek-close { z-index: 3; }
+.sloth-peek-hearts { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.sloth-peek-hearts span {
+  position: absolute;
+  left: 50%;
+  top: 69%;
+  font-size: 1.4rem;
+  opacity: 0;
+  animation: sloth-heart-burst 1400ms ease-out var(--heart-delay) both;
+}
+@keyframes sloth-heart-burst {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(.4); }
+  12% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--heart-x)), var(--heart-y)) scale(1.15); }
+}
+.sloth-peek-modal.sloth-peek-reduced .sloth-peek-head { transition-duration: 0ms; }
+.sloth-peek-reduced .sloth-peek-hearts span {
+  animation: none;
+  opacity: 1;
+  transform: translate(calc(-50% + var(--heart-x)), var(--heart-y));
+}

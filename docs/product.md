@@ -85,3 +85,12 @@ than filling every interface label with them.
 Update this file in the same change when the product's audience, tone,
 experience principles, major feature set, or user-visible constraints change.
 Temporary ideas and future tasks belong in an issue tracker rather than here.
+
+From October 15–24, 2026, a silent sloth peekaboo replaces the welcome-back
+popup. A centered popup waits on the first frame until Mouse taps anywhere on
+the screen. Sloth rises smoothly behind a fixed ledge and paws. Tap her for purple hearts,
+then tap again to let her peek down. Tap her paws to repeat. The × appears after
+the first rise and stays available throughout the loop; nothing auto-dismisses.
+Appearances are at least 30 minutes apart, including return visits. Reduced
+motion keeps the same tap loop with still poses and a stationary heart cluster. The usual welcome-back
+experience returns October 25.
